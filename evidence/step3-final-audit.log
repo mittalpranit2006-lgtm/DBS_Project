@@ -1,0 +1,110 @@
+
+Session altered.
+
+
+AUDIT_USER
+--------------------------------------------------------------------------------------------------------------------------------
+PDB
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+SYS
+XEPDB1
+
+
+
+NAME			N
+-------------- ----------
+BRANCH		       10
+CUSTOMER	       10
+CUSTOMER_PHONE	       11
+EMPLOYEE	       10
+PAYMENT 	       10
+RENTAL		       10
+VEHICLE 	       10
+VEHICLE_TYPE	       10
+
+8 rows selected.
+
+
+OBJECT_NAME															 OBJECT_TYPE		 STATUS
+-------------------------------------------------------------------------------------------------------------------------------- ----------------------- -------
+SVR_WORKFLOW															 PACKAGE		 VALID
+SVR_WORKFLOW															 PACKAGE BODY		 VALID
+SEQ_SVR_PAYMENT 														 SEQUENCE		 VALID
+SEQ_SVR_RENTAL															 SEQUENCE		 VALID
+TRG_SVR_PAYMENT 														 TRIGGER		 VALID
+TRG_SVR_RENTAL															 TRIGGER		 VALID
+TRG_SVR_VEHICLE_STATUS														 TRIGGER		 VALID
+
+7 rows selected.
+
+
+INVALID_OBJECT_COUNT
+--------------------
+		   0
+
+
+ERROR_COUNT
+-----------
+	  0
+
+
+PRIVILEGE
+----------------------------------------
+CREATE PROCEDURE
+CREATE SEQUENCE
+CREATE SESSION
+CREATE TABLE
+CREATE TRIGGER
+
+
+C STATUS   VALIDATED	 CONSTRAINT_COUNT
+- -------- ------------- ----------------
+C ENABLED  VALIDATED		       54
+P ENABLED  VALIDATED			8
+R ENABLED  VALIDATED			8
+U ENABLED  VALIDATED			8
+
+
+VEHICLE_MISMATCH
+----------------
+	       0
+
+
+OVERPAID_RENTALS
+----------------
+	       0
+
+
+DISPOSABLE_RENTALS
+------------------
+		 0
+
+
+DISPOSABLE_PAYMENTS
+-------------------
+		  0
+
+
+Session altered.
+
+FINAL RECHECK AFTER LAST ROLLBACK TEST
+
+CUSTOMER_ROWS PHONE_ROWS  TYPE_ROWS BRANCH_ROWS VEHICLE_ROWS EMPLOYEE_ROWS RENTAL_ROWS PAYMENT_ROWS
+------------- ---------- ---------- ----------- ------------ ------------- ----------- ------------
+	   10	      11	 10	     10 	  10		10	    10		 10
+
+
+INVALID_OBJECTS
+---------------
+	      0
+
+
+DISPOSABLE_RENTALS
+------------------
+		 0
+
+
+DISPOSABLE_PAYMENTS
+-------------------
+		  0
+

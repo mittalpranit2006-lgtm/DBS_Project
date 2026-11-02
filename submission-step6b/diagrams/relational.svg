@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1310" viewBox="0 0 1600 1310">
+<rect width="100%" height="100%" fill="#f7fafc"/>
+<text x="70" y="52" font-family="Arial" font-size="30" font-weight="bold" fill="#12304a">AMENDED RELATIONAL SCHEMA — 8 TABLES</text>
+<text x="70" y="88" font-family="Arial" font-size="19" fill="#45556a">Review 1 used 9 relations; implementation uses RENTAL.Status_Name CHECK and no RENTAL_STATUS table.</text>
+<rect x="70" y="125" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,125 H738 Q750,125 750,137 V171 H70 V137 Q70,125 82,125" fill="#134b70"/>
+<text x="90" y="157" font-family="Arial" font-size="23" font-weight="bold" fill="white">CUSTOMER</text>
+<text x="90" y="197" font-family="Arial" font-size="18" fill="#233d55">PK Customer_ID</text>
+<text x="90" y="219" font-family="Arial" font-size="18" fill="#233d55">First_Name, Last_Name</text>
+<text x="90" y="241" font-family="Arial" font-size="18" fill="#233d55">Email UQ; License_No UQ</text>
+<text x="90" y="263" font-family="Arial" font-size="18" fill="#233d55">Address; Registration_Date</text>
+<rect x="850" y="125" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,125 H1518 Q1530,125 1530,137 V171 H850 V137 Q850,125 862,125" fill="#134b70"/>
+<text x="870" y="157" font-family="Arial" font-size="23" font-weight="bold" fill="white">CUSTOMER_PHONE</text>
+<text x="870" y="197" font-family="Arial" font-size="18" fill="#233d55">PK/FK Customer_ID → CUSTOMER</text>
+<text x="870" y="219" font-family="Arial" font-size="18" fill="#233d55">PK Phone_No</text>
+<text x="870" y="241" font-family="Arial" font-size="18" fill="#233d55">10–15 digits; composite key</text>
+<rect x="70" y="385" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,385 H738 Q750,385 750,397 V431 H70 V397 Q70,385 82,385" fill="#134b70"/>
+<text x="90" y="417" font-family="Arial" font-size="23" font-weight="bold" fill="white">VEHICLE_TYPE</text>
+<text x="90" y="457" font-family="Arial" font-size="18" fill="#233d55">PK Type_ID</text>
+<text x="90" y="479" font-family="Arial" font-size="18" fill="#233d55">Type_Name UQ</text>
+<text x="90" y="501" font-family="Arial" font-size="18" fill="#233d55">Daily_Rate &gt; 0</text>
+<text x="90" y="523" font-family="Arial" font-size="18" fill="#233d55">Security_Deposit ≥ 0</text>
+<rect x="850" y="385" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,385 H1518 Q1530,385 1530,397 V431 H850 V397 Q850,385 862,385" fill="#134b70"/>
+<text x="870" y="417" font-family="Arial" font-size="23" font-weight="bold" fill="white">BRANCH</text>
+<text x="870" y="457" font-family="Arial" font-size="18" fill="#233d55">PK Branch_ID</text>
+<text x="870" y="479" font-family="Arial" font-size="18" fill="#233d55">Branch_Name + Location UQ</text>
+<text x="870" y="501" font-family="Arial" font-size="18" fill="#233d55">Phone UQ</text>
+<rect x="70" y="645" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,645 H738 Q750,645 750,657 V691 H70 V657 Q70,645 82,645" fill="#134b70"/>
+<text x="90" y="677" font-family="Arial" font-size="23" font-weight="bold" fill="white">VEHICLE</text>
+<text x="90" y="717" font-family="Arial" font-size="18" fill="#233d55">PK Vehicle_ID</text>
+<text x="90" y="739" font-family="Arial" font-size="18" fill="#233d55">Registration_No UQ</text>
+<text x="90" y="761" font-family="Arial" font-size="18" fill="#233d55">Brand, Model, Purchase_Year</text>
+<text x="90" y="783" font-family="Arial" font-size="18" fill="#233d55">Availability_Status CHECK</text>
+<text x="90" y="805" font-family="Arial" font-size="18" fill="#233d55">FK Type_ID → VEHICLE_TYPE</text>
+<text x="90" y="827" font-family="Arial" font-size="18" fill="#233d55">FK Branch_ID → BRANCH</text>
+<rect x="850" y="645" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,645 H1518 Q1530,645 1530,657 V691 H850 V657 Q850,645 862,645" fill="#134b70"/>
+<text x="870" y="677" font-family="Arial" font-size="23" font-weight="bold" fill="white">EMPLOYEE</text>
+<text x="870" y="717" font-family="Arial" font-size="18" fill="#233d55">PK Employee_ID</text>
+<text x="870" y="739" font-family="Arial" font-size="18" fill="#233d55">Name, Email UQ, Phone UQ</text>
+<text x="870" y="761" font-family="Arial" font-size="18" fill="#233d55">ROLE</text>
+<text x="870" y="783" font-family="Arial" font-size="18" fill="#233d55">FK Branch_ID → BRANCH</text>
+<rect x="70" y="905" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,905 H738 Q750,905 750,917 V951 H70 V917 Q70,905 82,905" fill="#134b70"/>
+<text x="90" y="937" font-family="Arial" font-size="23" font-weight="bold" fill="white">RENTAL</text>
+<text x="90" y="977" font-family="Arial" font-size="18" fill="#233d55">PK Rental_ID</text>
+<text x="90" y="999" font-family="Arial" font-size="18" fill="#233d55">FK Customer_ID → CUSTOMER</text>
+<text x="90" y="1021" font-family="Arial" font-size="18" fill="#233d55">FK Vehicle_ID → VEHICLE</text>
+<text x="90" y="1043" font-family="Arial" font-size="18" fill="#233d55">FK Employee_ID → EMPLOYEE</text>
+<text x="90" y="1065" font-family="Arial" font-size="18" fill="#233d55">Status_Name CHECK</text>
+<text x="90" y="1087" font-family="Arial" font-size="18" fill="#233d55">Start/Expected/Actual dates</text>
+<text x="90" y="1109" font-family="Arial" font-size="18" fill="#233d55">Total_Amount</text>
+<text x="90" y="1131" font-family="Arial" font-size="18" fill="#233d55">Daily_Rate_Snapshot</text>
+<rect x="850" y="905" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,905 H1518 Q1530,905 1530,917 V951 H850 V917 Q850,905 862,905" fill="#134b70"/>
+<text x="870" y="937" font-family="Arial" font-size="23" font-weight="bold" fill="white">PAYMENT</text>
+<text x="870" y="977" font-family="Arial" font-size="18" fill="#233d55">PK Payment_ID</text>
+<text x="870" y="999" font-family="Arial" font-size="18" fill="#233d55">FK Rental_ID → RENTAL</text>
+<text x="870" y="1021" font-family="Arial" font-size="18" fill="#233d55">Payment_Date; Amount &gt; 0</text>
+<text x="870" y="1043" font-family="Arial" font-size="18" fill="#233d55">Payment_Method/Status CHECK</text>
+<text x="70" y="1200" font-family="Arial" font-size="18" fill="#12304a">1:N  CUSTOMER→CUSTOMER_PHONE; CUSTOMER→RENTAL; VEHICLE_TYPE→VEHICLE; BRANCH→VEHICLE/EMPLOYEE</text>
+<text x="70" y="1230" font-family="Arial" font-size="18" fill="#12304a">1:N  VEHICLE→RENTAL; EMPLOYEE→RENTAL; RENTAL→PAYMENT. Child foreign keys are mandatory.</text>
+</svg>

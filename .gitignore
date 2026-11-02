@@ -1,0 +1,50 @@
+# Local secrets and machine-specific settings
+.env
+.env.*
+!.env.example
+*.properties.local
+backend/local-config.ps1
+*credentials*
+*secret*
+wallet/
+*.jks
+*.p12
+
+# Build and local runtime output
+target/
+out/
+*.class
+*.log
+logs/
+.idea/
+.vscode/
+
+# SQL*Plus output and local evidence captures
+*.lst
+*.spool
+evidence/*
+!evidence/.gitkeep
+
+# Local report generators and earlier review drafts
+submission-step6b/build_artifacts.py
+submission-step6b/fill_supplied_template.py
+submission-step6b/final-report-draft.*
+
+# Password-free, selected submission evidence
+!evidence/step2b-project.log
+!evidence/step2b-negative-rollback.log
+!evidence/step3-members.log
+!evidence/step3-functional.log
+!evidence/step3-concurrency-a.log
+!evidence/step3-concurrency-b.log
+!evidence/step3-final-audit.log
+!evidence/step6a-build.log
+!evidence/step6a-committed-final-audit.log
+!evidence/step6a-committed-http-final.json
+!evidence/step6a-committed-health.json
+!evidence/step6a-committed-after-start.log
+!evidence/step6a-committed-after-return.log
+!evidence/step6a-commit-rental-start.jpg
+!evidence/step6a-commit-return-result.jpg
+!evidence/step6a-commit-payment-result.jpg
+!evidence/step6a-commit-overpayment-rejected.jpg

@@ -1,0 +1,471 @@
+USER is "SVR_APP"
+
+CONTAINER_NAME                                                                  
+--------------------------------------------------------------------------------
+XEPDB1                                                                          
+
+STEP2B NEGATIVE AND ROLLBACK START
+
+PL/SQL procedure successfully completed.
+
+
+Savepoint created.
+
+PASS disposable INSERT, UPDATE and DELETE affected one row each                 
+
+PL/SQL procedure successfully completed.
+
+PASS expected FK rejection                                                      
+PASS expected composite-key rejection                                           
+PASS expected status CHECK rejection                                            
+
+PL/SQL procedure successfully completed.
+
+
+Rollback complete.
+
+PASS disposable customer absent after rollback                                  
+
+PL/SQL procedure successfully completed.
+
+
+Rollback complete.
+
+PASS negative tests and disposable INSERT/UPDATE/DELETE rolled back.            
+
+PL/SQL procedure successfully completed.
+
+STEP2B FINAL VERIFICATION START
+
+PL/SQL procedure successfully completed.
+
+
+PROJECT_USERNAME                                                                
+--------------------------------------------------------------------------------
+CONTAINER_NAME                                                                  
+--------------------------------------------------------------------------------
+SERVICE_NAME                                                                    
+--------------------------------------------------------------------------------
+SVR_APP                                                                         
+XEPDB1                                                                          
+xepdb1                                                                          
+                                                                                
+
+
+TABLE_NAME            ROW_COUNT                                                 
+-------------------- ----------                                                 
+CUSTOMER                     10                                                 
+CUSTOMER_PHONE               11                                                 
+VEHICLE_TYPE                 10                                                 
+BRANCH                       10                                                 
+VEHICLE                      10                                                 
+EMPLOYEE                     10                                                 
+RENTAL                       10                                                 
+PAYMENT                      10                                                 
+
+8 rows selected.
+
+PASS exact eight-table set                                                      
+PASS CUSTOMER rows=10                                                           
+PASS CUSTOMER_PHONE rows=11                                                     
+PASS VEHICLE_TYPE rows=10                                                       
+PASS BRANCH rows=10                                                             
+PASS VEHICLE rows=10                                                            
+PASS EMPLOYEE rows=10                                                           
+PASS RENTAL rows=10                                                             
+PASS PAYMENT rows=10                                                            
+PASS disabled or unvalidated constraints                                        
+PASS primary, foreign, unique and check constraints; active-vehicle index       
+PASS orphan customer phones                                                     
+PASS orphan vehicle references                                                  
+PASS orphan employees                                                           
+PASS orphan rental references                                                   
+PASS orphan payments                                                            
+PASS rentals before customer registration                                       
+PASS seed charge mismatches                                                     
+PASS seed availability mismatches                                               
+PASS completed payments exceed charges                                          
+PASS cancelled/pre-start payment conflicts                                      
+PASS Active overdue, Completed late and Cancelled examples                      
+
+PL/SQL procedure successfully completed.
+
+
+C STATUS   VALIDATED     CONSTRAINT_COUNT                                       
+- -------- ------------- ----------------                                       
+C ENABLED  VALIDATED                   54                                       
+P ENABLED  VALIDATED                    8                                       
+R ENABLED  VALIDATED                    8                                       
+U ENABLED  VALIDATED                    8                                       
+
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_BRANCH_PHONE                                                                 
+BRANCH               C ENABLED  VALIDATED                                       
+                                                                                
+PK_BRANCH                                                                       
+BRANCH               P ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008241                                                                     
+BRANCH               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008242                                                                     
+BRANCH               C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008243                                                                     
+BRANCH               C ENABLED  VALIDATED                                       
+                                                                                
+UQ_BRANCH_NAME_LOC                                                              
+BRANCH               U ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+UQ_BRANCH_PHONE                                                                 
+BRANCH               U ENABLED  VALIDATED                                       
+                                                                                
+PK_CUSTOMER                                                                     
+CUSTOMER             P ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008220                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008221                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008222                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008223                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008224                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008225                                                                     
+CUSTOMER             C ENABLED  VALIDATED                                       
+                                                                                
+UQ_CUSTOMER_EMAIL                                                               
+CUSTOMER             U ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+UQ_CUSTOMER_LICENSE                                                             
+CUSTOMER             U ENABLED  VALIDATED                                       
+                                                                                
+CK_CPHONE_DIGITS                                                                
+CUSTOMER_PHONE       C ENABLED  VALIDATED                                       
+                                                                                
+FK_CPHONE_CUSTOMER                                                              
+CUSTOMER_PHONE       R ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+PK_CUSTOMER_PHONE                                                               
+CUSTOMER_PHONE       P ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008229                                                                     
+CUSTOMER_PHONE       C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008230                                                                     
+CUSTOMER_PHONE       C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_EMPLOYEE_PHONE                                                               
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+FK_EMPLOYEE_BRANCH                                                              
+EMPLOYEE             R ENABLED  VALIDATED                                       
+                                                                                
+PK_EMPLOYEE                                                                     
+EMPLOYEE             P ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008261                                                                     
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008262                                                                     
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008263                                                                     
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008264                                                                     
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008265                                                                     
+EMPLOYEE             C ENABLED  VALIDATED                                       
+                                                                                
+UQ_EMPLOYEE_EMAIL                                                               
+EMPLOYEE             U ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+UQ_EMPLOYEE_PHONE                                                               
+EMPLOYEE             U ENABLED  VALIDATED                                       
+                                                                                
+CK_PAYMENT_AMOUNT                                                               
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+CK_PAYMENT_METHOD                                                               
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_PAYMENT_STATUS                                                               
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+FK_PAYMENT_RENTAL                                                               
+PAYMENT              R ENABLED  VALIDATED                                       
+                                                                                
+PK_PAYMENT                                                                      
+PAYMENT              P ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008288                                                                     
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008289                                                                     
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008290                                                                     
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008291                                                                     
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008292                                                                     
+PAYMENT              C ENABLED  VALIDATED                                       
+                                                                                
+CK_RENTAL_AMOUNT                                                                
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_RENTAL_DATES                                                                 
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+CK_RENTAL_RATE                                                                  
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+CK_RENTAL_RETURN_STATE                                                          
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_RENTAL_STATUS                                                                
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+FK_RENTAL_CUSTOMER                                                              
+RENTAL               R ENABLED  VALIDATED                                       
+                                                                                
+FK_RENTAL_EMPLOYEE                                                              
+RENTAL               R ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+FK_RENTAL_VEHICLE                                                               
+RENTAL               R ENABLED  VALIDATED                                       
+                                                                                
+PK_RENTAL                                                                       
+RENTAL               P ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008271                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008272                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008273                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008274                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008275                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008276                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008277                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008278                                                                     
+RENTAL               C ENABLED  VALIDATED                                       
+                                                                                
+CK_VEHICLE_AVAIL                                                                
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+CK_VEHICLE_YEAR                                                                 
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+FK_VEHICLE_BRANCH                                                               
+VEHICLE              R ENABLED  VALIDATED                                       
+                                                                                
+FK_VEHICLE_TYPE                                                                 
+VEHICLE              R ENABLED  VALIDATED                                       
+                                                                                
+PK_VEHICLE                                                                      
+VEHICLE              P ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008248                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008249                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008250                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008251                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008252                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008253                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008254                                                                     
+VEHICLE              C ENABLED  VALIDATED                                       
+                                                                                
+UQ_VEHICLE_REG                                                                  
+VEHICLE              U ENABLED  VALIDATED                                       
+                                                                                
+CK_VTYPE_DEPOSIT                                                                
+VEHICLE_TYPE         C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+CK_VTYPE_RATE                                                                   
+VEHICLE_TYPE         C ENABLED  VALIDATED                                       
+                                                                                
+PK_VEHICLE_TYPE                                                                 
+VEHICLE_TYPE         P ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008234                                                                     
+VEHICLE_TYPE         C ENABLED  VALIDATED                                       
+                                                                                
+
+CONSTRAINT_NAME                                                                 
+--------------------------------------------------------------------------------
+TABLE_NAME           C STATUS   VALIDATED                                       
+-------------------- - -------- -------------                                   
+SYS_C008235                                                                     
+VEHICLE_TYPE         C ENABLED  VALIDATED                                       
+                                                                                
+SYS_C008236                                                                     
+VEHICLE_TYPE         C ENABLED  VALIDATED                                       
+                                                                                
+UQ_VTYPE_NAME                                                                   
+VEHICLE_TYPE         U ENABLED  VALIDATED                                       
+                                                                                
+
+78 rows selected.
+
+STEP2B COMPLETE - inspect both evidence logs for SP2, ORA and PLS errors.       
+
+PL/SQL procedure successfully completed.
+

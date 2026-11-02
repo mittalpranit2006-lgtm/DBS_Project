@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-10-25T04:43:22.0300890+05:30",
+  "rental": {
+    "status": 200,
+    "body": {
+      "rentalId": 7016,
+      "customerId": 1981,
+      "vehicleId": 3981,
+      "employeeId": 2001,
+      "statusName": "Completed",
+      "startDate": "2026-10-25T04:32",
+      "expectedReturnDate": "2026-10-27T04:32",
+      "actualReturnDate": "2026-10-25T04:36",
+      "totalAmount": 1200,
+      "dailyRateSnapshot": 1200
+    }
+  },
+  "vehicle": {
+    "status": 200,
+    "body": {
+      "vehicleId": 3981,
+      "registrationNo": "SVR-COMMIT-3981",
+      "brand": "Test Motors",
+      "model": "History Check",
+      "purchaseYear": 2025,
+      "availabilityStatus": "Available",
+      "typeId": 1,
+      "branchId": 1
+    }
+  },
+  "payment": {
+    "status": 200,
+    "body": {
+      "paymentId": 8018,
+      "rentalId": 7016,
+      "paymentDate": "2026-10-25T04:39",
+      "amount": 500,
+      "paymentMethod": "UPI",
+      "paymentStatus": "Completed"
+    }
+  },
+  "paymentList": {
+    "status": 200,
+    "body": {
+      "items": [
+        {
+          "paymentId": 8018,
+          "rentalId": 7016,
+          "paymentDate": "2026-10-25T04:39",
+          "amount": 500,
+          "paymentMethod": "UPI",
+          "paymentStatus": "Completed"
+        }
+      ]
+    }
+  },
+  "balance": {
+    "status": 200,
+    "body": {
+      "rentalId": 7016,
+      "outstandingBalance": 700
+    }
+  }
+}

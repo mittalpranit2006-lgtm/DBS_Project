@@ -1,0 +1,73 @@
+erDiagram
+    CUSTOMER ||--o{ CUSTOMER_PHONE : has
+    CUSTOMER ||--o{ RENTAL : makes
+    VEHICLE_TYPE ||--o{ VEHICLE : classifies
+    BRANCH ||--o{ VEHICLE : manages
+    BRANCH ||--o{ EMPLOYEE : employs
+    VEHICLE ||--o{ RENTAL : used_in
+    EMPLOYEE ||--o{ RENTAL : processes
+    RENTAL ||--o{ PAYMENT : has
+
+    CUSTOMER {
+        NUMBER Customer_ID PK
+        VARCHAR2 First_Name
+        VARCHAR2 Last_Name
+        VARCHAR2 Email UK
+        VARCHAR2 License_No UK
+        VARCHAR2 Address
+        DATE Registration_Date
+    }
+    CUSTOMER_PHONE {
+        NUMBER Customer_ID PK, FK
+        VARCHAR2 Phone_No PK
+    }
+    VEHICLE_TYPE {
+        NUMBER Type_ID PK
+        VARCHAR2 Type_Name UK
+        NUMBER Daily_Rate
+        NUMBER Security_Deposit
+    }
+    BRANCH {
+        NUMBER Branch_ID PK
+        VARCHAR2 Branch_Name
+        VARCHAR2 Location
+        VARCHAR2 Phone UK
+    }
+    VEHICLE {
+        NUMBER Vehicle_ID PK
+        VARCHAR2 Registration_No UK
+        VARCHAR2 Brand
+        VARCHAR2 Model
+        NUMBER Purchase_Year
+        VARCHAR2 Availability_Status
+        NUMBER Type_ID FK
+        NUMBER Branch_ID FK
+    }
+    EMPLOYEE {
+        NUMBER Employee_ID PK
+        VARCHAR2 Name
+        VARCHAR2 Email UK
+        VARCHAR2 Phone UK
+        VARCHAR2 Role
+        NUMBER Branch_ID FK
+    }
+    RENTAL {
+        NUMBER Rental_ID PK
+        NUMBER Customer_ID FK
+        NUMBER Vehicle_ID FK
+        NUMBER Employee_ID FK
+        VARCHAR2 Status_Name
+        TIMESTAMP Start_Date
+        TIMESTAMP Expected_Return_Date
+        TIMESTAMP Actual_Return_Date
+        NUMBER Total_Amount
+        NUMBER Daily_Rate_Snapshot
+    }
+    PAYMENT {
+        NUMBER Payment_ID PK
+        NUMBER Rental_ID FK
+        TIMESTAMP Payment_Date
+        NUMBER Amount
+        VARCHAR2 Payment_Method
+        VARCHAR2 Payment_Status
+    }

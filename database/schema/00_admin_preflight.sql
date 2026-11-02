@@ -1,0 +1,40 @@
+-- Read-only. Run from a fresh SYSTEM session connected to XEPDB1.
+SET ECHO OFF
+SET VERIFY OFF
+SET SERVEROUTPUT ON
+WHENEVER OSERROR EXIT FAILURE
+WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+
+DECLARE
+  v_count NUMBER;
+  v_free_bytes NUMBER;
+  v_growth_bytes NUMBER;
+BEGIN
+  IF USER <> 'SYSTEM' OR SYS_CONTEXT('USERENV', 'CON_NAME') <> 'XEPDB1' THEN
+    RAISE_APPLICATION_ERROR(-20001, 'Expected SYSTEM connected to XEPDB1; no changes made');
+  END IF;
+  SELECT COUNT(*) INTO v_count FROM DBA_TABLESPACES
+   WHERE TABLESPACE_NAME = 'USERS' AND CONTENTS = 'PERMANENT' AND STATUS = 'ONLINE';
+  IF v_count <> 1 THEN
+    RAISE_APPLICATION_ERROR(-20002, 'Expected one online USERS tablespace; no changes made');
+  END IF;
+  SELECT COUNT(*) INTO v_count FROM DBA_TABLESPACES
+   WHERE TABLESPACE_NAME = 'TEMP' AND CONTENTS = 'TEMPORARY' AND STATUS = 'ONLINE';
+  IF v_count <> 1 THEN
+    RAISE_APPLICATION_ERROR(-20003, 'Expected one online TEMP tablespace; no changes made');
+  END IF;
+  SELECT NVL(SUM(bytes),0) INTO v_free_bytes FROM DBA_FREE_SPACE
+   WHERE TABLESPACE_NAME = 'USERS';
+  SELECT NVL(SUM(CASE WHEN AUTOEXTENSIBLE = 'YES'
+                      THEN GREATEST(MAXBYTES - BYTES,0) ELSE 0 END),0)
+    INTO v_growth_bytes FROM DBA_DATA_FILES WHERE TABLESPACE_NAME = 'USERS';
+  IF v_free_bytes + v_growth_bytes < 20 * 1024 * 1024 THEN
+    RAISE_APPLICATION_ERROR(-20005, 'USERS has less than 20 MB free/autoextend headroom');
+  END IF;
+  SELECT COUNT(*) INTO v_count FROM DBA_USERS WHERE USERNAME = 'SVR_APP';
+  IF v_count <> 0 THEN
+    RAISE_APPLICATION_ERROR(-20004, 'SVR_APP already exists; inspect it before proceeding');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('PASS: SYSTEM / XEPDB1; USERS and TEMP online; USERS headroom >= 20 MB; SVR_APP absent.');
+END;
+/

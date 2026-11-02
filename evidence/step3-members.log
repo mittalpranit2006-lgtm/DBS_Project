@@ -1,0 +1,1695 @@
+USER is "SVR_APP"
+
+CONTAINER_NAME                                                                  
+--------------------------------------------------------------------------------
+XEPDB1                                                                          
+
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20300,'Wrong account/container'); END IF; END;
+  2  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SAVEPOINT member_demo;
+
+Savepoint created.
+
+SQL> INSERT INTO CUSTOMER VALUES(1991,'Demo','One','demo1991@example.test','DL-DEMO-1991','Demo address',SYSDATE);
+
+1 row created.
+
+SQL> UPDATE CUSTOMER SET Address='Updated demo address' WHERE Customer_ID=1991;
+
+1 row updated.
+
+SQL> DELETE FROM CUSTOMER WHERE Customer_ID=1991;
+
+1 row deleted.
+
+SQL> PROMPT Member 1 - Customers, phones, payments and revenue
+Member 1 - Customers, phones, payments and revenue
+SQL> -- M1.1 simple selection
+SQL> PROMPT M1.1 - customer list
+M1.1 - customer list
+SQL> SELECT Customer_ID, First_Name, Last_Name, Email FROM CUSTOMER ORDER BY Customer_ID;
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+       1001 Aarav                                                               
+Mehta                                                                           
+aarav.mehta@example.test                                                        
+                                                                                
+       1002 Diya                                                                
+Rao                                                                             
+diya.rao@example.test                                                           
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+                                                                                
+       1003 Kabir                                                               
+Shah                                                                            
+kabir.shah@example.test                                                         
+                                                                                
+       1004 Isha                                                                
+Nair                                                                            
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+isha.nair@example.test                                                          
+                                                                                
+       1005 Rohan                                                               
+Das                                                                             
+rohan.das@example.test                                                          
+                                                                                
+       1006 Mira                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+Sen                                                                             
+mira.sen@example.test                                                           
+                                                                                
+       1007 Neel                                                                
+Kapoor                                                                          
+neel.kapoor@example.test                                                        
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+       1008 Tara                                                                
+Menon                                                                           
+tara.menon@example.test                                                         
+                                                                                
+       1009 Arjun                                                               
+Bose                                                                            
+arjun.bose@example.test                                                         
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+EMAIL                                                                           
+--------------------------------------------------------------------------------
+                                                                                
+       1010 Nina                                                                
+Iyer                                                                            
+nina.iyer@example.test                                                          
+                                                                                
+
+10 rows selected.
+
+SQL> -- M1.2 one-to-many join
+SQL> PROMPT M1.2 - customer phones
+M1.2 - customer phones
+SQL> SELECT c.Customer_ID, c.First_Name, c.Last_Name, cp.Phone_No
+  2    FROM CUSTOMER c JOIN CUSTOMER_PHONE cp ON cp.Customer_ID=c.Customer_ID
+  3   ORDER BY c.Customer_ID, cp.Phone_No;
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                    PHONE_NO           
+------------------------------------------------------------ ---------------    
+       1001 Aarav                                                               
+Mehta                                                        9990000001         
+                                                                                
+       1001 Aarav                                                               
+Mehta                                                        9990000011         
+                                                                                
+       1002 Diya                                                                
+Rao                                                          9990000002         
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                    PHONE_NO           
+------------------------------------------------------------ ---------------    
+       1003 Kabir                                                               
+Shah                                                         9990000003         
+                                                                                
+       1004 Isha                                                                
+Nair                                                         9990000004         
+                                                                                
+       1005 Rohan                                                               
+Das                                                          9990000005         
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                    PHONE_NO           
+------------------------------------------------------------ ---------------    
+       1006 Mira                                                                
+Sen                                                          9990000006         
+                                                                                
+       1007 Neel                                                                
+Kapoor                                                       9990000007         
+                                                                                
+       1008 Tara                                                                
+Menon                                                        9990000008         
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                    PHONE_NO           
+------------------------------------------------------------ ---------------    
+       1009 Arjun                                                               
+Bose                                                         9990000009         
+                                                                                
+       1010 Nina                                                                
+Iyer                                                         9990000010         
+                                                                                
+
+11 rows selected.
+
+SQL> -- M1.3 complex multi-table join and aggregation; collected rent, not accrued revenue
+SQL> PROMPT M1.3 - collected rent by branch
+M1.3 - collected rent by branch
+SQL> SELECT b.Branch_Name, b.Location, SUM(p.Amount) AS Collected_Rent
+  2    FROM PAYMENT p JOIN RENTAL r ON r.Rental_ID=p.Rental_ID
+  3  	    JOIN VEHICLE v ON v.Vehicle_ID=r.Vehicle_ID
+  4  	    JOIN BRANCH b ON b.Branch_ID=v.Branch_ID
+  5   WHERE p.Payment_Status='Completed' AND r.Status_Name<>'Cancelled'
+  6   GROUP BY b.Branch_Name,b.Location ORDER BY Collected_Rent DESC;
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+West End                                                                        
+Mumbai                                                                          
+         12000                                                                  
+                                                                                
+Harbour                                                                         
+Kochi                                                                           
+          7500                                                                  
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+                                                                                
+Tech Park                                                                       
+Hyderabad                                                                       
+          7000                                                                  
+                                                                                
+Airport                                                                         
+Coimbatore                                                                      
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+          6600                                                                  
+                                                                                
+Old City                                                                        
+Jaipur                                                                          
+          6500                                                                  
+                                                                                
+Marina                                                                          
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+Chennai                                                                         
+          4000                                                                  
+                                                                                
+University                                                                      
+Pune                                                                            
+          2800                                                                  
+                                                                                
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+North Gate                                                                      
+Mysuru                                                                          
+          1500                                                                  
+                                                                                
+Central                                                                         
+Bengaluru                                                                       
+          1200                                                                  
+
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+COLLECTED_RENT                                                                  
+--------------                                                                  
+                                                                                
+
+9 rows selected.
+
+SQL> -- M1.4 correlated nested query
+SQL> PROMPT M1.4 - customers with completed payments
+M1.4 - customers with completed payments
+SQL> SELECT c.Customer_ID,c.First_Name,c.Last_Name FROM CUSTOMER c
+  2   WHERE EXISTS (SELECT 1 FROM RENTAL r JOIN PAYMENT p ON p.Rental_ID=r.Rental_ID
+  3  		     WHERE r.Customer_ID=c.Customer_ID AND p.Payment_Status='Completed')
+  4   ORDER BY c.Customer_ID;
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+       1001 Aarav                                                               
+Mehta                                                                           
+                                                                                
+       1002 Diya                                                                
+Rao                                                                             
+                                                                                
+       1003 Kabir                                                               
+Shah                                                                            
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+       1004 Isha                                                                
+Nair                                                                            
+                                                                                
+       1005 Rohan                                                               
+Das                                                                             
+                                                                                
+       1006 Mira                                                                
+Sen                                                                             
+                                                                                
+
+CUSTOMER_ID FIRST_NAME                                                          
+----------- ------------------------------------------------------------        
+LAST_NAME                                                                       
+------------------------------------------------------------                    
+       1007 Neel                                                                
+Kapoor                                                                          
+                                                                                
+       1008 Tara                                                                
+Menon                                                                           
+                                                                                
+       1010 Nina                                                                
+Iyer                                                                            
+                                                                                
+
+9 rows selected.
+
+SQL> -- M1.5 SQL functions and aggregation
+SQL> PROMPT M1.5 - collection by month
+M1.5 - collection by month
+SQL> SELECT TO_CHAR(p.Payment_Date,'YYYY-MM') AS Collection_Month,
+  2  	    COUNT(*) AS Payment_Count, ROUND(SUM(p.Amount),2) AS Cash_Collected
+  3    FROM PAYMENT p WHERE p.Payment_Status='Completed'
+  4   GROUP BY TO_CHAR(p.Payment_Date,'YYYY-MM') ORDER BY Collection_Month;
+
+COLLECT PAYMENT_COUNT CASH_COLLECTED                                            
+------- ------------- --------------                                            
+2026-08             1           6600                                            
+2026-09             2          14800                                            
+2026-10             7          27700                                            
+
+SQL> 
+SQL> 
+SQL> ROLLBACK TO member_demo;
+
+Rollback complete.
+
+SQL> PROMPT PASS member 1 DML rolled back and five SELECTs completed
+PASS member 1 DML rolled back and five SELECTs completed
+SQL> 
+SQL> @database/step3/member_2_demo.sql
+SQL> SET ECHO ON VERIFY OFF
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20300,'Wrong account/container'); END IF; END;
+  2  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SAVEPOINT member_demo;
+
+Savepoint created.
+
+SQL> INSERT INTO VEHICLE_TYPE VALUES(99,'Disposable Demo Type',999,0);
+
+1 row created.
+
+SQL> UPDATE VEHICLE_TYPE SET Daily_Rate=1000 WHERE Type_ID=99;
+
+1 row updated.
+
+SQL> DELETE FROM VEHICLE_TYPE WHERE Type_ID=99;
+
+1 row deleted.
+
+SQL> PROMPT Member 2 - Fleet, types, branches and employees
+Member 2 - Fleet, types, branches and employees
+SQL> -- M2.1 simple selection
+SQL> PROMPT M2.1 - vehicle types and rates
+M2.1 - vehicle types and rates
+SQL> SELECT Type_ID,Type_Name,Daily_Rate,Security_Deposit FROM VEHICLE_TYPE ORDER BY Type_ID;
+
+   TYPE_ID TYPE_NAME                                                            
+---------- ------------------------------------------------------------         
+DAILY_RATE SECURITY_DEPOSIT                                                     
+---------- ----------------                                                     
+         1 Economy Hatchback                                                    
+      1200             3000                                                     
+                                                                                
+         2 Premium Hatchback                                                    
+      1500             3500                                                     
+                                                                                
+         3 Compact Sedan                                                        
+      2000             4500                                                     
+                                                                                
+
+   TYPE_ID TYPE_NAME                                                            
+---------- ------------------------------------------------------------         
+DAILY_RATE SECURITY_DEPOSIT                                                     
+---------- ----------------                                                     
+         4 Mid-size Sedan                                                       
+      2500             5500                                                     
+                                                                                
+         5 Premium Sedan                                                        
+      3500             7500                                                     
+                                                                                
+         6 Compact SUV                                                          
+      2800             6000                                                     
+                                                                                
+
+   TYPE_ID TYPE_NAME                                                            
+---------- ------------------------------------------------------------         
+DAILY_RATE SECURITY_DEPOSIT                                                     
+---------- ----------------                                                     
+         7 Mid-size SUV                                                         
+      4000             8500                                                     
+                                                                                
+         8 Electric Compact                                                     
+      2200             5000                                                     
+                                                                                
+         9 Electric SUV                                                         
+      3800             8000                                                     
+                                                                                
+
+   TYPE_ID TYPE_NAME                                                            
+---------- ------------------------------------------------------------         
+DAILY_RATE SECURITY_DEPOSIT                                                     
+---------- ----------------                                                     
+        10 Luxury SUV                                                           
+      6500            12000                                                     
+                                                                                
+
+10 rows selected.
+
+SQL> -- M2.2 complex join
+SQL> PROMPT M2.2 - vehicle, type and branch
+M2.2 - vehicle, type and branch
+SQL> SELECT v.Vehicle_ID,v.Registration_No,t.Type_Name,b.Branch_Name,b.Location,
+  2  	    v.Availability_Status
+  3    FROM VEHICLE v JOIN VEHICLE_TYPE t ON t.Type_ID=v.Type_ID
+  4  	    JOIN BRANCH b ON b.Branch_ID=v.Branch_ID ORDER BY v.Vehicle_ID;
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3001 SVR-TEST-0001                                                        
+Economy Hatchback                                                               
+Central                                                                         
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Bengaluru                                                                       
+Rented                                                                          
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3002 SVR-TEST-0002                                                        
+Premium Hatchback                                                               
+North Gate                                                                      
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Mysuru                                                                          
+Rented                                                                          
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3003 SVR-TEST-0003                                                        
+Compact Sedan                                                                   
+Marina                                                                          
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Chennai                                                                         
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3004 SVR-TEST-0004                                                        
+Mid-size Sedan                                                                  
+Harbour                                                                         
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Kochi                                                                           
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3005 SVR-TEST-0005                                                        
+Premium Sedan                                                                   
+Tech Park                                                                       
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Hyderabad                                                                       
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3006 SVR-TEST-0006                                                        
+Compact SUV                                                                     
+University                                                                      
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Pune                                                                            
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3007 SVR-TEST-0007                                                        
+Mid-size SUV                                                                    
+West End                                                                        
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Mumbai                                                                          
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3008 SVR-TEST-0008                                                        
+Electric Compact                                                                
+Airport                                                                         
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Coimbatore                                                                      
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3009 SVR-TEST-0009                                                        
+Electric SUV                                                                    
+Riverside                                                                       
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Kolkata                                                                         
+Available                                                                       
+                                                                                
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+      3010 SVR-TEST-0010                                                        
+Luxury SUV                                                                      
+Old City                                                                        
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+TYPE_NAME                                                                       
+------------------------------------------------------------                    
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+LOCATION                                                                        
+--------------------------------------------------------------------------------
+AVAILABILITY_STA                                                                
+----------------                                                                
+Jaipur                                                                          
+Available                                                                       
+                                                                                
+
+10 rows selected.
+
+SQL> -- M2.3 nested query: branches with an available vehicle
+SQL> PROMPT M2.3 - branches with available vehicles
+M2.3 - branches with available vehicles
+SQL> SELECT b.Branch_ID,b.Branch_Name FROM BRANCH b
+  2   WHERE EXISTS (SELECT 1 FROM VEHICLE v WHERE v.Branch_ID=b.Branch_ID
+  3  		      AND v.Availability_Status='Available') ORDER BY b.Branch_ID;
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+         3                                                                      
+Marina                                                                          
+                                                                                
+         4                                                                      
+Harbour                                                                         
+                                                                                
+         5                                                                      
+Tech Park                                                                       
+                                                                                
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+         6                                                                      
+University                                                                      
+                                                                                
+         7                                                                      
+West End                                                                        
+                                                                                
+         8                                                                      
+Airport                                                                         
+                                                                                
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+         9                                                                      
+Riverside                                                                       
+                                                                                
+        10                                                                      
+Old City                                                                        
+                                                                                
+
+8 rows selected.
+
+SQL> -- M2.4 aggregation and outer join
+SQL> PROMPT M2.4 - fleet size by branch
+M2.4 - fleet size by branch
+SQL> SELECT b.Branch_ID,b.Branch_Name,COUNT(v.Vehicle_ID) AS Fleet_Size
+  2    FROM BRANCH b LEFT JOIN VEHICLE v ON v.Branch_ID=b.Branch_ID
+  3   GROUP BY b.Branch_ID,b.Branch_Name ORDER BY b.Branch_ID;
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+         1                                                                      
+Central                                                                         
+         1                                                                      
+                                                                                
+         2                                                                      
+North Gate                                                                      
+         1                                                                      
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+                                                                                
+         3                                                                      
+Marina                                                                          
+         1                                                                      
+                                                                                
+         4                                                                      
+Harbour                                                                         
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+         1                                                                      
+                                                                                
+         5                                                                      
+Tech Park                                                                       
+         1                                                                      
+                                                                                
+         6                                                                      
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+University                                                                      
+         1                                                                      
+                                                                                
+         7                                                                      
+West End                                                                        
+         1                                                                      
+                                                                                
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+         8                                                                      
+Airport                                                                         
+         1                                                                      
+                                                                                
+         9                                                                      
+Riverside                                                                       
+         1                                                                      
+
+ BRANCH_ID                                                                      
+----------                                                                      
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+FLEET_SIZE                                                                      
+----------                                                                      
+                                                                                
+        10                                                                      
+Old City                                                                        
+         1                                                                      
+                                                                                
+
+10 rows selected.
+
+SQL> -- M2.5 SQL functions
+SQL> PROMPT M2.5 - employee duties and phone lengths
+M2.5 - employee duties and phone lengths
+SQL> SELECT e.Employee_ID,UPPER(e.Name) AS Employee_Name,e."ROLE",b.Branch_Name,
+  2  	    LENGTH(e.Phone) AS Phone_Digits
+  3    FROM EMPLOYEE e JOIN BRANCH b ON b.Branch_ID=e.Branch_ID
+  4   ORDER BY e.Employee_ID;
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2001                                                                     
+ANIKA VERMA                                                                     
+Rental Agent                                                                    
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Central                                                                         
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2002                                                                     
+VIKRAM SETHI                                                                    
+Rental Agent                                                                    
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+North Gate                                                                      
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2003                                                                     
+LEENA JOSEPH                                                                    
+Branch Manager                                                                  
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Marina                                                                          
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2004                                                                     
+DEV MALHOTRA                                                                    
+Rental Agent                                                                    
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Harbour                                                                         
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2005                                                                     
+POOJA KRISHNAN                                                                  
+Branch Manager                                                                  
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Tech Park                                                                       
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2006                                                                     
+ADIL KHAN                                                                       
+Fleet Coordinator                                                               
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+University                                                                      
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2007                                                                     
+SANA ROY                                                                        
+Rental Agent                                                                    
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+West End                                                                        
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2008                                                                     
+KIRAN PATEL                                                                     
+Fleet Coordinator                                                               
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Airport                                                                         
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2009                                                                     
+RITU SHARMA                                                                     
+Branch Manager                                                                  
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Riverside                                                                       
+          10                                                                    
+                                                                                
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+       2010                                                                     
+OM PRAKASH                                                                      
+Rental Agent                                                                    
+
+EMPLOYEE_ID                                                                     
+-----------                                                                     
+EMPLOYEE_NAME                                                                   
+--------------------------------------------------------------------------------
+ROLE                                                                            
+----------------------------------------                                        
+BRANCH_NAME                                                                     
+--------------------------------------------------------------------------------
+PHONE_DIGITS                                                                    
+------------                                                                    
+Old City                                                                        
+          10                                                                    
+                                                                                
+
+10 rows selected.
+
+SQL> 
+SQL> 
+SQL> ROLLBACK TO member_demo;
+
+Rollback complete.
+
+SQL> PROMPT PASS member 2 DML rolled back and five SELECTs completed
+PASS member 2 DML rolled back and five SELECTs completed
+SQL> 
+SQL> @database/step3/member_3_demo.sql
+SQL> SET ECHO ON VERIFY OFF
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20300,'Wrong account/container'); END IF; END;
+  2  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SAVEPOINT member_demo;
+
+Savepoint created.
+
+SQL> INSERT INTO RENTAL VALUES(5998,1009,3009,2009,'Cancelled',TIMESTAMP '2026-12-01 09:00:00',TIMESTAMP '2026-12-02 09:00:00',NULL,0,3800);
+
+1 row created.
+
+SQL> UPDATE RENTAL SET Expected_Return_Date=TIMESTAMP '2026-12-03 09:00:00' WHERE Rental_ID=5998;
+
+1 row updated.
+
+SQL> DELETE FROM RENTAL WHERE Rental_ID=5998;
+
+1 row deleted.
+
+SQL> PROMPT Member 3 - Rentals, returns, statuses and charges
+Member 3 - Rentals, returns, statuses and charges
+SQL> -- M3.1 simple selection
+SQL> PROMPT M3.1 - rental list
+M3.1 - rental list
+SQL> SELECT Rental_ID,Status_Name,Start_Date,Expected_Return_Date,Total_Amount
+  2    FROM RENTAL ORDER BY Rental_ID;
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5001 Active                                                               
+23-OCT-26 09.00.00 AM                                                           
+25-OCT-26 09.00.00 AM                                                           
+        2400                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5002 Active                                                               
+20-OCT-26 10.00.00 AM                                                           
+22-OCT-26 10.00.00 AM                                                           
+        3000                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5003 Completed                                                            
+10-OCT-26 09.00.00 AM                                                           
+12-OCT-26 09.00.00 AM                                                           
+        4000                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5004 Completed                                                            
+05-OCT-26 09.00.00 AM                                                           
+06-OCT-26 09.00.00 AM                                                           
+        7500                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5005 Completed                                                            
+01-OCT-26 10.00.00 AM                                                           
+03-OCT-26 10.00.00 AM                                                           
+        7000                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5006 Completed                                                            
+20-SEP-26 09.00.00 AM                                                           
+21-SEP-26 09.00.00 AM                                                           
+        2800                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5007 Completed                                                            
+15-SEP-26 12.00.00 PM                                                           
+18-SEP-26 12.00.00 PM                                                           
+       12000                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5008 Completed                                                            
+01-AUG-26 08.00.00 AM                                                           
+03-AUG-26 08.00.00 AM                                                           
+        6600                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5009 Cancelled                                                            
+26-OCT-26 09.00.00 AM                                                           
+28-OCT-26 09.00.00 AM                                                           
+           0                                                                    
+                                                                                
+
+ RENTAL_ID STATUS_NAME                                                          
+---------- ------------                                                         
+START_DATE                                                                      
+---------------------------------------------------------------------------     
+EXPECTED_RETURN_DATE                                                            
+---------------------------------------------------------------------------     
+TOTAL_AMOUNT                                                                    
+------------                                                                    
+      5010 Completed                                                            
+19-OCT-26 09.00.00 AM                                                           
+20-OCT-26 09.00.00 AM                                                           
+        6500                                                                    
+                                                                                
+
+10 rows selected.
+
+SQL> -- M3.2 complex customer/vehicle/rate join
+SQL> PROMPT M3.2 - rental customer and vehicle details
+M3.2 - rental customer and vehicle details
+SQL> SELECT r.Rental_ID,c.First_Name || ' ' || c.Last_Name AS Customer_Name,
+  2  	    v.Registration_No,t.Type_Name,r.Status_Name,r.Daily_Rate_Snapshot
+  3    FROM RENTAL r JOIN CUSTOMER c ON c.Customer_ID=r.Customer_ID
+  4  	    JOIN VEHICLE v ON v.Vehicle_ID=r.Vehicle_ID
+  5  	    JOIN VEHICLE_TYPE t ON t.Type_ID=v.Type_ID ORDER BY r.Rental_ID;
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5001                                                                      
+Aarav Mehta                                                                     
+SVR-TEST-0001                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Economy Hatchback                                            Active             
+               1200                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5002                                                                      
+Diya Rao                                                                        
+SVR-TEST-0002                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Premium Hatchback                                            Active             
+               1500                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5003                                                                      
+Kabir Shah                                                                      
+SVR-TEST-0003                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Compact Sedan                                                Completed          
+               2000                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5004                                                                      
+Isha Nair                                                                       
+SVR-TEST-0004                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Mid-size Sedan                                               Completed          
+               2500                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5005                                                                      
+Rohan Das                                                                       
+SVR-TEST-0005                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Premium Sedan                                                Completed          
+               3500                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5006                                                                      
+Mira Sen                                                                        
+SVR-TEST-0006                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Compact SUV                                                  Completed          
+               2800                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5007                                                                      
+Neel Kapoor                                                                     
+SVR-TEST-0007                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Mid-size SUV                                                 Completed          
+               4000                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5008                                                                      
+Tara Menon                                                                      
+SVR-TEST-0008                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Electric Compact                                             Completed          
+               2200                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5009                                                                      
+Arjun Bose                                                                      
+SVR-TEST-0009                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Electric SUV                                                 Cancelled          
+               3800                                                             
+                                                                                
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+      5010                                                                      
+Nina Iyer                                                                       
+SVR-TEST-0010                                                                   
+
+ RENTAL_ID                                                                      
+----------                                                                      
+CUSTOMER_NAME                                                                   
+--------------------------------------------------------------------------------
+REGISTRATION_NO                                                                 
+------------------------                                                        
+TYPE_NAME                                                    STATUS_NAME        
+------------------------------------------------------------ ------------       
+DAILY_RATE_SNAPSHOT                                                             
+-------------------                                                             
+Luxury SUV                                                   Completed          
+               6500                                                             
+                                                                                
+
+10 rows selected.
+
+SQL> -- M3.3 nested query: vehicles with completed rental history
+SQL> PROMPT M3.3 - vehicles with completed rentals
+M3.3 - vehicles with completed rentals
+SQL> SELECT v.Vehicle_ID,v.Registration_No FROM VEHICLE v
+  2   WHERE EXISTS (SELECT 1 FROM RENTAL r WHERE r.Vehicle_ID=v.Vehicle_ID
+  3  		      AND r.Status_Name='Completed') ORDER BY v.Vehicle_ID;
+
+VEHICLE_ID REGISTRATION_NO                                                      
+---------- ------------------------                                             
+      3003 SVR-TEST-0003                                                        
+      3004 SVR-TEST-0004                                                        
+      3005 SVR-TEST-0005                                                        
+      3006 SVR-TEST-0006                                                        
+      3007 SVR-TEST-0007                                                        
+      3008 SVR-TEST-0008                                                        
+      3010 SVR-TEST-0010                                                        
+
+7 rows selected.
+
+SQL> -- M3.4 derived duration and late days; neither is stored
+SQL> PROMPT M3.4 - derived billable and late days
+M3.4 - derived billable and late days
+SQL> SELECT Rental_ID,Status_Name,
+  2  	    CASE WHEN Status_Name='Cancelled' THEN 0 ELSE
+  3  	      GREATEST(1,CEIL(CAST(COALESCE(Actual_Return_Date,Expected_Return_Date) AS DATE)
+  4  			      -CAST(Start_Date AS DATE))) END AS Billable_Days,
+  5  	    CASE WHEN Status_Name='Completed' THEN
+  6  	      GREATEST(0,CEIL(CAST(Actual_Return_Date AS DATE)-CAST(Expected_Return_Date AS DATE)))
+  7  	      WHEN Status_Name='Active' THEN
+  8  	      GREATEST(0,CEIL(CAST(SYSTIMESTAMP AS DATE)-CAST(Expected_Return_Date AS DATE)))
+  9  	      ELSE 0 END AS Late_Days,
+ 10  	    Total_Amount FROM RENTAL ORDER BY Rental_ID;
+
+ RENTAL_ID STATUS_NAME  BILLABLE_DAYS  LATE_DAYS TOTAL_AMOUNT                   
+---------- ------------ ------------- ---------- ------------                   
+      5001 Active                   2          0         2400                   
+      5002 Active                   2          3         3000                   
+      5003 Completed                2          0         4000                   
+      5004 Completed                3          2         7500                   
+      5005 Completed                2          0         7000                   
+      5006 Completed                1          0         2800                   
+      5007 Completed                3          0        12000                   
+      5008 Completed                3          1         6600                   
+      5009 Cancelled                0          0            0                   
+      5010 Completed                1          0         6500                   
+
+10 rows selected.
+
+SQL> -- M3.5 SQL functions and aggregation
+SQL> PROMPT M3.5 - rental counts and average charge by status
+M3.5 - rental counts and average charge by status
+SQL> SELECT Status_Name,COUNT(*) AS Rental_Count,
+  2  	    ROUND(AVG(Total_Amount),2) AS Average_Charge
+  3    FROM RENTAL GROUP BY Status_Name ORDER BY Status_Name;
+
+STATUS_NAME  RENTAL_COUNT AVERAGE_CHARGE                                        
+------------ ------------ --------------                                        
+Active                  2           2700                                        
+Cancelled               1              0                                        
+Completed               7        6628.57                                        
+
+SQL> 
+SQL> ROLLBACK TO member_demo;
+
+Rollback complete.
+
+SQL> PROMPT PASS member 3 DML rolled back and five SELECTs completed
+PASS member 3 DML rolled back and five SELECTs completed
+SQL> 
+SQL> SPOOL OFF

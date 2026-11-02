@@ -1,0 +1,18 @@
+# Step 3 PL/SQL design (prepared before database installation)
+
+Target: existing `SVR_APP` in `XEPDB1`. Step 2B tables and seed are retained. The Oracle owner can still alter its own objects, so triggers are application integrity rules, not a security boundary.
+
+| Entry point | Inputs and output | Tables and rule | Later JDBC call |
+| --- | --- | --- | --- |
+| `SVR_WORKFLOW.START_RENTAL` | customer, vehicle, employee, start, expected return; OUT rental ID | Lock VEHICLE first; check customer registration and employee branch; copy VEHICLE_TYPE rate; insert Active RENTAL and set VEHICLE Rented atomically. Reject an overlapping interval. | `{call SVR_WORKFLOW.START_RENTAL(?,?,?,?,?,?)}` |
+| `SVR_WORKFLOW.RECORD_RETURN` | rental ID, actual return; OUT final charge | Lock VEHICLE then RENTAL; require Active/Rented; price actual elapsed days from snapshot; reject a final bill below completed payments; set Completed and Available atomically. | `{call SVR_WORKFLOW.RECORD_RETURN(?,?,?)}` |
+| `SVR_WORKFLOW.RECORD_PAYMENT` | rental ID, amount, method, payment date; OUT payment ID | Lock RENTAL; accept only Completed payment status, positive amount, supported method, valid bill and non-cancelled rental; retain payment history. | `{call SVR_WORKFLOW.RECORD_PAYMENT(?,?,?,?,?)}` |
+| `SVR_WORKFLOW.CALCULATE_CHARGE` | start, end, rate; RETURN charge | Minimum one day; round any partial additional day upward. No late surcharge, tax or deposit charge. | `{? = call SVR_WORKFLOW.CALCULATE_CHARGE(?,?,?)}` |
+| `SVR_WORKFLOW.OUTSTANDING_BALANCE` | rental ID; RETURN balance | `RENTAL.Total_Amount` less only `PAYMENT.Payment_Status='Completed'` amounts. Active bill is an estimate; Completed bill is final. | `{? = call SVR_WORKFLOW.OUTSTANDING_BALANCE(?)}` |
+| `SVR_WORKFLOW.OVERDUE_REPORT` | as-of timestamp; OUT count and estimated outstanding | Explicit cursor over Active rentals past expected return; DBMS_OUTPUT prints rows for SQL*Plus; OUT scalars are JDBC friendly. | `{call SVR_WORKFLOW.OVERDUE_REPORT(?,?,?)}` |
+
+`SEQ_SVR_RENTAL` and `SEQ_SVR_PAYMENT` allocate IDs above the seed range. Gaps after rollback are expected. Procedures use a savepoint and rollback only their own work on failure; the caller decides COMMIT or ROLLBACK. Lock order is VEHICLE then RENTAL then PAYMENT, while payment-only paths start at RENTAL. `TRG_SVR_RENTAL` enforces the two API transitions and rejects direct changes to genuine history. `TRG_SVR_VEHICLE_STATUS` rejects direct changes into/out of Rented and moves/retyping of rented vehicles, while allowing Available↔Maintenance. A narrow disposable Cancelled-rental path supports the required member INSERT/UPDATE/DELETE lab demonstration; it has no payment or availability effect and must be rolled back. `TRG_SVR_PAYMENT` is a compound trigger: BEFORE EACH ROW locks the parent RENTAL and rejects bad status/date/amount; AFTER STATEMENT sums Completed payments without a mutating-table query. Payment UPDATE and DELETE are rejected to retain history. A refund workflow and full cancellation business workflow are outside Step 3.
+
+Recognized rental revenue is distinct from completed cash receipts. `Total_Amount` is the current bill, not a record of money collected. `Rental_Duration` and `Late_Days` remain derived. Historical seed rows predate the new trigger and are preserved.
+
+Installed as SVR_APP on 24 October 2026. The package, package body, three triggers and two sequences are VALID with no USER_ERRORS. The final audit is in `evidence/step3-final-audit.log`; functional and concurrency evidence is listed in `transaction-and-concurrency.md`.

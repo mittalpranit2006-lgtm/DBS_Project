@@ -1,0 +1,67 @@
+USER is "SVR_APP"
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20400,'Wrong account/container'); END IF; END;
+  2  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT SYS_CONTEXT('USERENV','SID') AS SESSION_A_SID, SYSTIMESTAMP AS START_TIME FROM DUAL;
+
+SESSION_A_SID                                                                   
+--------------------------------------------------------------------------------
+START_TIME                                                                      
+---------------------------------------------------------------------------     
+873                                                                             
+24-OCT-26 05.42.48.065000 PM +05:30                                             
+                                                                                
+
+SQL> DECLARE v_id NUMBER; v_start TIMESTAMP:=CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' HOUR;
+  2  BEGIN
+  3    SVR_WORKFLOW.START_RENTAL(1004,3004,2004,v_start,v_start+INTERVAL '24' HOUR,v_id);
+  4    DBMS_OUTPUT.PUT_LINE('A vehicle rental uncommitted ID='||v_id||' at '||TO_CHAR(SYSTIMESTAMP,'HH24:MI:SS.FF3'));
+  5  END;
+  6  /
+A vehicle rental uncommitted ID=7002 at 17:42:48.071                            
+
+PL/SQL procedure successfully completed.
+
+SQL> HOST powershell -NoProfile -Command "Set-Content -LiteralPath 'evidence/step3-vehicle-a.flag' -Value ready; while (-not (Test-Path 'evidence/step3-vehicle-b.flag')) { Start-Sleep -Milliseconds 200 }; Start-Sleep -Seconds 4"
+
+SQL> ROLLBACK;
+
+Rollback complete.
+
+SQL> SELECT SYSTIMESTAMP AS A_VEHICLE_ROLLBACK_TIME FROM DUAL;
+
+A_VEHICLE_ROLLBACK_TIME                                                         
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.04.377000 PM +05:30                                             
+
+SQL> HOST powershell -NoProfile -Command "while (-not (Test-Path 'evidence/step3-vehicle-done.flag')) { Start-Sleep -Milliseconds 200 }"
+
+SQL> SELECT Rental_ID FROM RENTAL WHERE Rental_ID=5001 FOR UPDATE;
+
+ RENTAL_ID                                                                      
+----------                                                                      
+      5001                                                                      
+
+SQL> SELECT SYSTIMESTAMP AS A_PAYMENT_PARENT_LOCK_TIME FROM DUAL;
+
+A_PAYMENT_PARENT_LOCK_TIME                                                      
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.04.879000 PM +05:30                                             
+
+SQL> HOST powershell -NoProfile -Command "Set-Content -LiteralPath 'evidence/step3-payment-a.flag' -Value ready; while (-not (Test-Path 'evidence/step3-payment-b.flag')) { Start-Sleep -Milliseconds 200 }; Start-Sleep -Seconds 4"
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> SELECT SYSTIMESTAMP AS A_PAYMENT_PARENT_COMMIT_TIME FROM DUAL;
+
+A_PAYMENT_PARENT_COMMIT_TIME                                                    
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.09.359000 PM +05:30                                             
+
+SQL> SPOOL OFF

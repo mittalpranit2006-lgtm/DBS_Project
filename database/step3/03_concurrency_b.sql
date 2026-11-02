@@ -1,0 +1,28 @@
+SET ECHO ON VERIFY OFF SERVEROUTPUT ON SIZE UNLIMITED
+WHENEVER OSERROR EXIT FAILURE
+WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20400,'Wrong account/container'); END IF; END;
+/
+SELECT SYS_CONTEXT('USERENV','SID') AS SESSION_B_SID, SYSTIMESTAMP AS START_TIME FROM DUAL;
+HOST powershell -NoProfile -Command "while (-not (Test-Path 'evidence/step3-vehicle-a.flag')) { Start-Sleep -Milliseconds 200 }; Set-Content -LiteralPath 'evidence/step3-vehicle-b.flag' -Value ready"
+SELECT SYSTIMESTAMP AS B_BEFORE_VEHICLE_LOCK FROM DUAL;
+SELECT Vehicle_ID FROM VEHICLE WHERE Vehicle_ID=3004 FOR UPDATE WAIT 60;
+SELECT SYSTIMESTAMP AS B_AFTER_VEHICLE_LOCK FROM DUAL;
+DECLARE v_id NUMBER; v_start TIMESTAMP:=CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' HOUR;
+BEGIN
+  SVR_WORKFLOW.START_RENTAL(1004,3004,2004,v_start,v_start+INTERVAL '24' HOUR,v_id);
+  DBMS_OUTPUT.PUT_LINE('B rental after A rollback ID='||v_id);
+END;
+/
+ROLLBACK;
+HOST powershell -NoProfile -Command "Set-Content -LiteralPath 'evidence/step3-vehicle-done.flag' -Value ready"
+HOST powershell -NoProfile -Command "while (-not (Test-Path 'evidence/step3-payment-a.flag')) { Start-Sleep -Milliseconds 200 }; Set-Content -LiteralPath 'evidence/step3-payment-b.flag' -Value ready"
+SELECT SYSTIMESTAMP AS B_BEFORE_PAYMENT_LOCK FROM DUAL;
+DECLARE v_id NUMBER;
+BEGIN
+  SVR_WORKFLOW.RECORD_PAYMENT(5001,1200,'UPI',CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' MINUTE,v_id);
+  DBMS_OUTPUT.PUT_LINE('B payment after A commit ID='||v_id||' at '||TO_CHAR(SYSTIMESTAMP,'HH24:MI:SS.FF3'));
+END;
+/
+SELECT SYSTIMESTAMP AS B_AFTER_PAYMENT_LOCK FROM DUAL;
+ROLLBACK;

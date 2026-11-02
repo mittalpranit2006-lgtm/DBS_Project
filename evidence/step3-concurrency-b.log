@@ -1,0 +1,83 @@
+USER is "SVR_APP"
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE BEGIN IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN RAISE_APPLICATION_ERROR(-20400,'Wrong account/container'); END IF; END;
+  2  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT SYS_CONTEXT('USERENV','SID') AS SESSION_B_SID, SYSTIMESTAMP AS START_TIME FROM DUAL;
+
+SESSION_B_SID                                                                   
+--------------------------------------------------------------------------------
+START_TIME                                                                      
+---------------------------------------------------------------------------     
+13                                                                              
+24-OCT-26 05.42.59.929000 PM +05:30                                             
+                                                                                
+
+SQL> HOST powershell -NoProfile -Command "while (-not (Test-Path 'evidence/step3-vehicle-a.flag')) { Start-Sleep -Milliseconds 200 }; Set-Content -LiteralPath 'evidence/step3-vehicle-b.flag' -Value ready"
+
+SQL> SELECT SYSTIMESTAMP AS B_BEFORE_VEHICLE_LOCK FROM DUAL;
+
+B_BEFORE_VEHICLE_LOCK                                                           
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.00.171000 PM +05:30                                             
+
+SQL> SELECT Vehicle_ID FROM VEHICLE WHERE Vehicle_ID=3004 FOR UPDATE WAIT 60;
+
+VEHICLE_ID                                                                      
+----------                                                                      
+      3004                                                                      
+
+SQL> SELECT SYSTIMESTAMP AS B_AFTER_VEHICLE_LOCK FROM DUAL;
+
+B_AFTER_VEHICLE_LOCK                                                            
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.04.377000 PM +05:30                                             
+
+SQL> DECLARE v_id NUMBER; v_start TIMESTAMP:=CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' HOUR;
+  2  BEGIN
+  3    SVR_WORKFLOW.START_RENTAL(1004,3004,2004,v_start,v_start+INTERVAL '24' HOUR,v_id);
+  4    DBMS_OUTPUT.PUT_LINE('B rental after A rollback ID='||v_id);
+  5  END;
+  6  /
+B rental after A rollback ID=7003                                               
+
+PL/SQL procedure successfully completed.
+
+SQL> ROLLBACK;
+
+Rollback complete.
+
+SQL> HOST powershell -NoProfile -Command "Set-Content -LiteralPath 'evidence/step3-vehicle-done.flag' -Value ready"
+
+SQL> HOST powershell -NoProfile -Command "while (-not (Test-Path 'evidence/step3-payment-a.flag')) { Start-Sleep -Milliseconds 200 }; Set-Content -LiteralPath 'evidence/step3-payment-b.flag' -Value ready"
+
+SQL> SELECT SYSTIMESTAMP AS B_BEFORE_PAYMENT_LOCK FROM DUAL;
+
+B_BEFORE_PAYMENT_LOCK                                                           
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.05.322000 PM +05:30                                             
+
+SQL> DECLARE v_id NUMBER;
+  2  BEGIN
+  3    SVR_WORKFLOW.RECORD_PAYMENT(5001,1200,'UPI',CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' MINUTE,v_id);
+  4    DBMS_OUTPUT.PUT_LINE('B payment after A commit ID='||v_id||' at '||TO_CHAR(SYSTIMESTAMP,'HH24:MI:SS.FF3'));
+  5  END;
+  6  /
+B payment after A commit ID=8003 at 17:43:09.358                                
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT SYSTIMESTAMP AS B_AFTER_PAYMENT_LOCK FROM DUAL;
+
+B_AFTER_PAYMENT_LOCK                                                            
+---------------------------------------------------------------------------     
+24-OCT-26 05.43.09.361000 PM +05:30                                             
+
+SQL> ROLLBACK;
+
+Rollback complete.
+
+SQL> SPOOL OFF

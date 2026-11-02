@@ -1,0 +1,23 @@
+# Step 5 browser test results — 24 October 2026
+
+Tested in the Codex in-app browser against Java localhost:8080, Oracle account SVR_APP in XEPDB1. A separate localhost:8081 server ran with `SVR_TEST_MODE=true` only for rollback-only workflow POSTs; its database health also reported SVR_APP/XEPDB1. The normal server stayed in non-test mode. JavaScript and Maven build passed (`../evidence/step5-build.log`).
+
+| Browser check | Observed result |
+| --- | --- |
+| Dashboard/navigation | Five navigation sections loaded. Live counts: 10 customers, 10 vehicles, 2 active rentals, 1 overdue, 8 available vehicles, ₹49,100 completed cash. |
+| Search, empty state, detail | Customer search found a disposable record; unmatched search displayed “No records found”. Customer, rental and payment details loaded actual API rows and balances. |
+| Customer/phone | Created customer 1995, edited its address, added phone 9876543195, changed it to 9876543196 and removed it through the UI. Final customer cleanup succeeded via API. |
+| Duplicate value | A browser customer create with an existing seed email returned the 409 duplicate message; the dialog and all entered values remained available for correction. No row was inserted. |
+| Fleet/organization | Created and edited disposable type 99, branch 99, vehicle 3995 and employee 2995. API-backed vehicle type and branch selectors contained those records. Browser delete of branch 99 while referenced returned “Record is referenced…”; browser delete of employee 2995 succeeded. Remaining disposable records were deleted through the API in dependency order after the browser confirmation became unresponsive. |
+| Rented vehicle safeguard | Editing seed vehicle 3001 from Rented to Available was rejected by the installed trigger with “Vehicle status transition requires the rental workflow.” The dialog kept its values; the vehicle was not changed. |
+| Rental validation/estimate | Available dropdown excluded rented vehicles 3001/3002. Oracle estimate for vehicle 3995, two days at updated ₹1,300/day, showed ₹2,600. Invalid return-before-start date kept form values and displayed an error; empty vehicle was blocked by required-field validation. |
+| Rental start/return | On rollback server, start returned rental ID 7014 with an explicit rolled-back notice. Return of seed rental 5001 calculated final ₹2,400 and rolled back; refreshed detail still showed Active, no actual return date and ₹1,200 outstanding. No test rental history was retained. |
+| Payments/reports | Normal server displayed cash and recognized branch revenue and the overdue report (one row, estimated outstanding ₹1,500). Seed payment 6001 detail showed rental 5001 outstanding ₹1,200. Overpayment 999999 was rejected and form values remained. Rollback-server payment of ₹100 returned ID 8015 with an explicit rolled-back notice. |
+| Responsive/console | At 390×844, navigation and cards reflowed; tables scroll horizontally. Browser error/warning log was empty after successful workflow tests. |
+| Offline state | The 8081 server was stopped, but the in-app browser tab became unresponsive to further state changes before an offline error card could be observed. Fetch now has an eight-second timeout. This specific visual check remains open for Step 6; no browser success is claimed. |
+
+Form submit buttons were observed disabled while POST requests were pending, then reenabled. API error text displayed in dialogs without clearing inputs. A separate automated double-click stress test and a full failed-request network inventory were not completed; those are Step 6 acceptance checks.
+
+Screenshots: `../evidence/step5-final-dashboard.jpg`, `step5-customers.jpg`, `step5-fleet.jpg`, `step5-duplicate-validation.jpg`, `step5-vehicle-safeguard.jpg`, `step5-rental-validation.jpg`, `step5-rental-rollback.jpg`, `step5-payments-reports.jpg`, `step5-payment-validation.jpg`, `step5-payment-rollback.jpg`, and `step5-mobile.jpg`. The screenshots contain fictional sample data and no credentials.
+
+After cleanup, `backend/verify-step5.ps1` read live Oracle-backed API rows and produced `../evidence/step5-final-consistency.json`: CUSTOMER 10, CUSTOMER_PHONE 11, VEHICLE_TYPE 10, BRANCH 10, VEHICLE 10, EMPLOYEE 10, RENTAL 10, PAYMENT 10; zero orphan references, availability mismatches, overpaid rentals and disposable records. The account/PDB check passed. The script cross-checks API rows, so it does not replace the Step 2B SQL*Plus constraint audit; that earlier audit is in `../evidence/step2b-negative-rollback.log` and Step 4's repeat verification is in `../evidence/step4-sqlplus-verify.log`.

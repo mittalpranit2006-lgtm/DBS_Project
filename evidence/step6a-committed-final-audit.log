@@ -1,0 +1,134 @@
+
+AUDIT_ACCOUNT                                                                                                                                                                       
+--------------------------------------------------------------------------------------------------------------------------------                                                    
+CONTAINER_NAME                                                                                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PROJECT_SCHEMA                                                                                                                                                                      
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SYS                                                                                                                                                                                 
+XEPDB1                                                                                                                                                                              
+SVR_APP                                                                                                                                                                             
+                                                                                                                                                                                    
+
+
+TABLE_NAME      ROW_COUNT                                                                                                                                                           
+-------------- ----------                                                                                                                                                           
+CUSTOMER               11                                                                                                                                                           
+CUSTOMER_PHONE         11                                                                                                                                                           
+VEHICLE_TYPE           10                                                                                                                                                           
+BRANCH                 10                                                                                                                                                           
+VEHICLE                11                                                                                                                                                           
+EMPLOYEE               10                                                                                                                                                           
+RENTAL                 11                                                                                                                                                           
+PAYMENT                11                                                                                                                                                           
+
+8 rows selected.
+
+
+ RENTAL_ID CUSTOMER_ID VEHICLE_ID EMPLOYEE_ID STATUS_NAME  START_DATE          EXPECTED_RETURN_DAT ACTUAL_RETURN_DATE  TOTAL_AMOUNT DAILY_RATE_SNAPSHOT AVAILABILITY_STA PAID_AMOUNT
+---------- ----------- ---------- ----------- ------------ ------------------- ------------------- ------------------- ------------ ------------------- ---------------- -----------
+      7016        1981       3981        2001 Completed    2026-10-25 04:32:00 2026-10-27 04:32:00 2026-10-25 04:36:00         1200                1200 Available                500
+
+
+PAYMENT_ID  RENTAL_ID PAYMENT_DATE            AMOUNT PAYMENT_METHOD       PAYMENT_STAT                                                                                              
+---------- ---------- ------------------- ---------- -------------------- ------------                                                                                              
+      8018       7016 2026-10-25 04:39:00        500 UPI                  Completed                                                                                                 
+
+
+C STATUS   VALIDATED     CONSTRAINT_COUNT                                                                                                                                           
+- -------- ------------- ----------------                                                                                                                                           
+C ENABLED  VALIDATED                   54                                                                                                                                           
+P ENABLED  VALIDATED                    8                                                                                                                                           
+R ENABLED  VALIDATED                    8                                                                                                                                           
+U ENABLED  VALIDATED                    8                                                                                                                                           
+
+PASS exact eight-table schema                                                                                                                                                       
+PASS disabled or unvalidated constraints = 0                                                                                                                                        
+PASS invalid objects = 0                                                                                                                                                            
+PASS compilation errors = 0                                                                                                                                                         
+PASS orphan customer phones = 0                                                                                                                                                     
+PASS orphan vehicle references = 0                                                                                                                                                  
+PASS orphan employees = 0                                                                                                                                                           
+PASS orphan rentals = 0                                                                                                                                                             
+PASS orphan payments = 0                                                                                                                                                            
+PASS availability mismatches = 0                                                                                                                                                    
+PASS overpaid rentals = 0                                                                                                                                                           
+PASS charge mismatches = 0                                                                                                                                                          
+PASS payment date/status conflicts = 0                                                                                                                                              
+PASS committed records and exact payment count                                                                                                                                      
+PASS outstanding balance = 700                                                                                                                                                      
+
+PL/SQL procedure successfully completed.
+
+SEED DIFF CUSTOMER (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF CUSTOMER_PHONE (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF VEHICLE_TYPE (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF BRANCH (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF VEHICLE (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF EMPLOYEE (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF RENTAL (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+
+SEED DIFF PAYMENT (both counts must be zero)
+
+DIRECTION             MISMATCHES                                                                                                                                                    
+--------------------- ----------                                                                                                                                                    
+missing_or_changed             0                                                                                                                                                    
+unexpected_or_changed          0                                                                                                                                                    
+
+2 rows selected.
+

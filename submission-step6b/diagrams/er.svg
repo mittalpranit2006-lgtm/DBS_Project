@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1310" viewBox="0 0 1600 1310">
+<rect width="100%" height="100%" fill="#f7fafc"/>
+<text x="70" y="52" font-family="Arial" font-size="30" font-weight="bold" fill="#12304a">AMENDED IMPLEMENTATION ER — 8 ENTITIES</text>
+<text x="70" y="88" font-family="Arial" font-size="19" fill="#45556a">Review 1 used 9 relations; implementation uses RENTAL.Status_Name CHECK and no RENTAL_STATUS table.</text>
+<line x1="410.0" y1="247.5" x2="1190.0" y2="247.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="410.0" y1="247.5" x2="410.0" y2="1027.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="410.0" y1="507.5" x2="410.0" y2="767.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="1190.0" y1="507.5" x2="410.0" y2="767.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="1190.0" y1="507.5" x2="1190.0" y2="767.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="410.0" y1="767.5" x2="410.0" y2="1027.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="1190.0" y1="767.5" x2="410.0" y2="1027.5" stroke="#d4803d" stroke-width="5"/>
+<line x1="410.0" y1="1027.5" x2="1190.0" y2="1027.5" stroke="#d4803d" stroke-width="5"/>
+<rect x="70" y="125" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,125 H738 Q750,125 750,137 V171 H70 V137 Q70,125 82,125" fill="#134b70"/>
+<text x="90" y="157" font-family="Arial" font-size="23" font-weight="bold" fill="white">CUSTOMER</text>
+<text x="90" y="197" font-family="Arial" font-size="18" fill="#233d55">Identity, contact and licence</text>
+<rect x="850" y="125" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,125 H1518 Q1530,125 1530,137 V171 H850 V137 Q850,125 862,125" fill="#134b70"/>
+<text x="870" y="157" font-family="Arial" font-size="23" font-weight="bold" fill="white">CUSTOMER_PHONE</text>
+<text x="870" y="197" font-family="Arial" font-size="18" fill="#233d55">Multivalued contact numbers</text>
+<text x="870" y="219" font-family="Arial" font-size="18" fill="#233d55">Composite identity with customer</text>
+<rect x="70" y="385" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,385 H738 Q750,385 750,397 V431 H70 V397 Q70,385 82,385" fill="#134b70"/>
+<text x="90" y="417" font-family="Arial" font-size="23" font-weight="bold" fill="white">VEHICLE_TYPE</text>
+<text x="90" y="457" font-family="Arial" font-size="18" fill="#233d55">Tariff and deposit</text>
+<rect x="850" y="385" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,385 H1518 Q1530,385 1530,397 V431 H850 V397 Q850,385 862,385" fill="#134b70"/>
+<text x="870" y="417" font-family="Arial" font-size="23" font-weight="bold" fill="white">BRANCH</text>
+<text x="870" y="457" font-family="Arial" font-size="18" fill="#233d55">Location and contact</text>
+<rect x="70" y="645" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,645 H738 Q750,645 750,657 V691 H70 V657 Q70,645 82,645" fill="#134b70"/>
+<text x="90" y="677" font-family="Arial" font-size="23" font-weight="bold" fill="white">VEHICLE</text>
+<text x="90" y="717" font-family="Arial" font-size="18" fill="#233d55">Fleet asset and availability</text>
+<rect x="850" y="645" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,645 H1518 Q1530,645 1530,657 V691 H850 V657 Q850,645 862,645" fill="#134b70"/>
+<text x="870" y="677" font-family="Arial" font-size="23" font-weight="bold" fill="white">EMPLOYEE</text>
+<text x="870" y="717" font-family="Arial" font-size="18" fill="#233d55">Staff member assigned to branch</text>
+<rect x="70" y="905" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M82,905 H738 Q750,905 750,917 V951 H70 V917 Q70,905 82,905" fill="#134b70"/>
+<text x="90" y="937" font-family="Arial" font-size="23" font-weight="bold" fill="white">RENTAL</text>
+<text x="90" y="977" font-family="Arial" font-size="18" fill="#233d55">Start / expected / actual return</text>
+<text x="90" y="999" font-family="Arial" font-size="18" fill="#233d55">Status, charge and frozen rate</text>
+<rect x="850" y="905" width="680" height="245" rx="12" fill="white" stroke="#9ab3c7" stroke-width="2"/>
+<path d="M862,905 H1518 Q1530,905 1530,917 V951 H850 V917 Q850,905 862,905" fill="#134b70"/>
+<text x="870" y="937" font-family="Arial" font-size="23" font-weight="bold" fill="white">PAYMENT</text>
+<text x="870" y="977" font-family="Arial" font-size="18" fill="#233d55">Amount, method and completion status</text>
+<text x="70" y="1200" font-family="Arial" font-size="18" fill="#12304a">1:N  CUSTOMER→CUSTOMER_PHONE; CUSTOMER→RENTAL; VEHICLE_TYPE→VEHICLE; BRANCH→VEHICLE/EMPLOYEE</text>
+<text x="70" y="1230" font-family="Arial" font-size="18" fill="#12304a">1:N  VEHICLE→RENTAL; EMPLOYEE→RENTAL; RENTAL→PAYMENT. Child foreign keys are mandatory.</text>
+</svg>

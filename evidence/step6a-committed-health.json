@@ -1,0 +1,13 @@
+{
+  "application": {
+    "status": "ok",
+    "service": "smart-vehicle-rental",
+    "testMode": false
+  },
+  "database": {
+    "status": "ok",
+    "account": "SVR_APP",
+    "pdb": "XEPDB1"
+  },
+  "checkedAt": "2026-10-25T04:30:23.9477872+05:30"
+}

@@ -1,0 +1,253 @@
+USER is "SVR_APP"
+
+CONTAINER_NAME                                                                  
+--------------------------------------------------------------------------------
+XEPDB1                                                                          
+
+SQL> WHENEVER OSERROR EXIT FAILURE
+SQL> WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
+SQL> DECLARE
+  2    n NUMBER;
+  3  BEGIN
+  4    IF USER<>'SVR_APP' OR SYS_CONTEXT('USERENV','CON_NAME')<>'XEPDB1' THEN
+  5  	 RAISE_APPLICATION_ERROR(-20200,'Wrong account/container'); END IF;
+  6    SELECT COUNT(*) INTO n FROM RENTAL; IF n<>10 THEN RAISE_APPLICATION_ERROR(-20201,'Baseline RENTAL count changed'); END IF;
+  7    SELECT COUNT(*) INTO n FROM PAYMENT; IF n<>10 THEN RAISE_APPLICATION_ERROR(-20202,'Baseline PAYMENT count changed'); END IF;
+  8  END;
+  9  /
+
+PL/SQL procedure successfully completed.
+
+SQL> SAVEPOINT step3_test;
+
+Savepoint created.
+
+SQL> DECLARE
+  2    v_id NUMBER; v_payment NUMBER; v_final NUMBER; v_rate NUMBER;
+  3    v_start TIMESTAMP:=CAST(SYSTIMESTAMP AS TIMESTAMP)-INTERVAL '1' HOUR;
+  4    v_expected TIMESTAMP:=v_start+INTERVAL '24' HOUR;
+  5    v_old_address VARCHAR2(240); v_address VARCHAR2(240); v_status VARCHAR2(16);
+  6    v_count NUMBER; v_sum NUMBER;
+  7    PROCEDURE expect_failure(p_code NUMBER, p_label VARCHAR2, p_actual NUMBER, p_message VARCHAR2) IS
+  8    BEGIN
+  9  	 IF p_actual<>p_code THEN
+ 10  	   RAISE_APPLICATION_ERROR(-20210,p_label||': wrong error '||p_actual||' '||p_message);
+ 11  	 END IF;
+ 12  	 DBMS_OUTPUT.PUT_LINE('PASS expected failure '||p_label||' '||p_code);
+ 13    END;
+ 14  BEGIN
+ 15    IF SVR_WORKFLOW.CALCULATE_CHARGE(v_start,v_start,2000)<>2000 OR
+ 16  	  SVR_WORKFLOW.CALCULATE_CHARGE(v_start,v_start+INTERVAL '24' HOUR,2000)<>2000 OR
+ 17  	  SVR_WORKFLOW.CALCULATE_CHARGE(v_start,v_start+INTERVAL '24' HOUR+INTERVAL '1' SECOND,2000)<>4000 THEN
+ 18  	 RAISE_APPLICATION_ERROR(-20211,'Charge boundaries failed'); END IF;
+ 19    DBMS_OUTPUT.PUT_LINE('PASS charge boundaries: 0h=2000, 24h=2000, 24h+1s=4000');
+ 20  
+ 21    SELECT Address INTO v_old_address FROM CUSTOMER WHERE Customer_ID=1003;
+ 22    UPDATE CUSTOMER SET Address='STEP3 PRIOR WORK' WHERE Customer_ID=1003;
+ 23    BEGIN
+ 24  	 SVR_WORKFLOW.START_RENTAL(1003,3001,2003,v_start,v_expected,v_id);
+ 25  	 RAISE_APPLICATION_ERROR(-20212,'Unavailable vehicle accepted');
+ 26    EXCEPTION WHEN OTHERS THEN expect_failure(-20112,'unavailable vehicle',SQLCODE,SQLERRM); END;
+ 27    SELECT Address INTO v_address FROM CUSTOMER WHERE Customer_ID=1003;
+ 28    IF v_address<>'STEP3 PRIOR WORK' THEN RAISE_APPLICATION_ERROR(-20213,'Prior caller work lost'); END IF;
+ 29    DBMS_OUTPUT.PUT_LINE('PASS failed procedure preserved earlier caller UPDATE');
+ 30  
+ 31    BEGIN
+ 32  	 SVR_WORKFLOW.START_RENTAL(1003,3003,2003,v_start,v_start,v_payment);
+ 33  	 RAISE_APPLICATION_ERROR(-20235,'Zero-length rental accepted');
+ 34    EXCEPTION WHEN OTHERS THEN expect_failure(-20111,'invalid rental dates',SQLCODE,SQLERRM); END;
+ 35    BEGIN
+ 36  	 SVR_WORKFLOW.START_RENTAL(1003,3003,2004,v_start,v_expected,v_payment);
+ 37  	 RAISE_APPLICATION_ERROR(-20236,'Other-branch employee accepted');
+ 38    EXCEPTION WHEN OTHERS THEN expect_failure(-20114,'employee branch',SQLCODE,SQLERRM); END;
+ 39    BEGIN
+ 40  	 SVR_WORKFLOW.START_RENTAL(1003,3003,2003,TIMESTAMP '2026-10-11 09:00:00',
+ 41  	   TIMESTAMP '2026-10-12 09:00:00',v_payment);
+ 42  	 RAISE_APPLICATION_ERROR(-20237,'Historical interval overlap accepted');
+ 43    EXCEPTION WHEN OTHERS THEN expect_failure(-20115,'historical overlap',SQLCODE,SQLERRM); END;
+ 44  
+ 45    SVR_WORKFLOW.START_RENTAL(1003,3003,2003,v_start,v_expected,v_id);
+ 46    SELECT Availability_Status INTO v_status FROM VEHICLE WHERE Vehicle_ID=3003;
+ 47    IF v_status<>'Rented' THEN RAISE_APPLICATION_ERROR(-20214,'Start did not rent vehicle'); END IF;
+ 48    SELECT Daily_Rate_Snapshot INTO v_rate FROM RENTAL WHERE Rental_ID=v_id;
+ 49    IF v_rate<>2000 OR SVR_WORKFLOW.OUTSTANDING_BALANCE(v_id)<>2000 THEN
+ 50  	 RAISE_APPLICATION_ERROR(-20215,'Snapshot or initial balance wrong'); END IF;
+ 51    DBMS_OUTPUT.PUT_LINE('PASS start rental '||v_id||', Rented, rate snapshot 2000');
+ 52  
+ 53    BEGIN
+ 54  	 SVR_WORKFLOW.START_RENTAL(1003,3003,2003,v_start,v_expected,v_payment);
+ 55  	 RAISE_APPLICATION_ERROR(-20216,'Duplicate active rental accepted');
+ 56    EXCEPTION WHEN OTHERS THEN expect_failure(-20112,'duplicate active vehicle',SQLCODE,SQLERRM); END;
+ 57  
+ 58    UPDATE VEHICLE_TYPE SET Daily_Rate=2100 WHERE Type_ID=3;
+ 59    SELECT Daily_Rate_Snapshot INTO v_rate FROM RENTAL WHERE Rental_ID=v_id;
+ 60    IF v_rate<>2000 THEN RAISE_APPLICATION_ERROR(-20217,'Historical rate snapshot changed'); END IF;
+ 61    DBMS_OUTPUT.PUT_LINE('PASS changing type rate retained rental snapshot 2000');
+ 62  
+ 63    SVR_WORKFLOW.RECORD_PAYMENT(v_id,500,'UPI',v_start+INTERVAL '30' MINUTE,v_payment);
+ 64    IF SVR_WORKFLOW.OUTSTANDING_BALANCE(v_id)<>1500 THEN
+ 65  	 RAISE_APPLICATION_ERROR(-20218,'Partial payment balance wrong'); END IF;
+ 66    DBMS_OUTPUT.PUT_LINE('PASS partial payment '||v_payment||', balance 1500');
+ 67    BEGIN
+ 68  	 SVR_WORKFLOW.RECORD_PAYMENT(v_id,1600,'UPI',v_start+INTERVAL '30' MINUTE,v_payment);
+ 69  	 RAISE_APPLICATION_ERROR(-20219,'Overpayment accepted');
+ 70    EXCEPTION WHEN OTHERS THEN expect_failure(-20144,'overpayment',SQLCODE,SQLERRM); END;
+ 71  
+ 72    SVR_WORKFLOW.RECORD_RETURN(v_id,CAST(SYSTIMESTAMP AS TIMESTAMP),v_final);
+ 73    SELECT Availability_Status INTO v_status FROM VEHICLE WHERE Vehicle_ID=3003;
+ 74    IF v_final<>2000 OR v_status<>'Available' OR SVR_WORKFLOW.OUTSTANDING_BALANCE(v_id)<>1500 THEN
+ 75  	 RAISE_APPLICATION_ERROR(-20220,'Return amount/status/balance wrong'); END IF;
+ 76    DBMS_OUTPUT.PUT_LINE('PASS return final 2000, vehicle Available, balance 1500');
+ 77    BEGIN
+ 78  	 SVR_WORKFLOW.RECORD_RETURN(v_id,CAST(SYSTIMESTAMP AS TIMESTAMP),v_final);
+ 79  	 RAISE_APPLICATION_ERROR(-20221,'Repeat return accepted');
+ 80    EXCEPTION WHEN OTHERS THEN expect_failure(-20116,'repeat return',SQLCODE,SQLERRM); END;
+ 81  
+ 82    BEGIN
+ 83  	 UPDATE VEHICLE SET Availability_Status='Rented' WHERE Vehicle_ID=3003;
+ 84  	 RAISE_APPLICATION_ERROR(-20225,'Direct vehicle Rented update accepted');
+ 85    EXCEPTION WHEN OTHERS THEN expect_failure(-20163,'direct vehicle status UPDATE',SQLCODE,SQLERRM); END;
+ 86    UPDATE VEHICLE SET Availability_Status='Maintenance' WHERE Vehicle_ID=3003;
+ 87    BEGIN
+ 88  	 SVR_WORKFLOW.START_RENTAL(1003,3003,2003,v_start,v_expected,v_payment);
+ 89  	 RAISE_APPLICATION_ERROR(-20226,'Maintenance vehicle rented');
+ 90    EXCEPTION WHEN OTHERS THEN expect_failure(-20112,'maintenance preservation',SQLCODE,SQLERRM); END;
+ 91    SELECT Availability_Status INTO v_status FROM VEHICLE WHERE Vehicle_ID=3003;
+ 92    IF v_status<>'Maintenance' THEN RAISE_APPLICATION_ERROR(-20227,'Maintenance status changed'); END IF;
+ 93    UPDATE VEHICLE SET Availability_Status='Available' WHERE Vehicle_ID=3003;
+ 94  
+ 95    BEGIN
+ 96  	 INSERT INTO RENTAL VALUES(7900,1005,3005,2005,'Active',v_start,v_expected,NULL,3500,3500);
+ 97  	 RAISE_APPLICATION_ERROR(-20228,'Direct Active insert accepted');
+ 98    EXCEPTION WHEN OTHERS THEN expect_failure(-20132,'direct Active INSERT',SQLCODE,SQLERRM); END;
+ 99    BEGIN
+100  	 INSERT INTO PAYMENT VALUES(8900,5001,v_start+INTERVAL '30' MINUTE,1300,'UPI','Completed');
+101  	 RAISE_APPLICATION_ERROR(-20229,'Direct overpayment accepted');
+102    EXCEPTION WHEN OTHERS THEN expect_failure(-20144,'direct overpayment INSERT',SQLCODE,SQLERRM); END;
+103    INSERT INTO PAYMENT VALUES(8901,5001,v_start+INTERVAL '30' MINUTE,100,'UPI','Completed');
+104    DBMS_OUTPUT.PUT_LINE('PASS valid direct payment INSERT guarded; all test payments roll back');
+105    BEGIN
+106  	 INSERT INTO PAYMENT VALUES(8902,5001,v_start+INTERVAL '30' MINUTE,100,'UPI','Pending');
+107  	 RAISE_APPLICATION_ERROR(-20238,'Pending payment accepted');
+108    EXCEPTION WHEN OTHERS THEN expect_failure(-20141,'unsupported payment status',SQLCODE,SQLERRM); END;
+109  
+110    SVR_WORKFLOW.START_RENTAL(1005,3005,2005,v_start,v_start+INTERVAL '48' HOUR,v_payment);
+111    SVR_WORKFLOW.RECORD_PAYMENT(v_payment,5000,'UPI',v_start+INTERVAL '30' MINUTE,v_final);
+112    BEGIN
+113  	 SVR_WORKFLOW.RECORD_RETURN(v_payment,CAST(SYSTIMESTAMP AS TIMESTAMP),v_final);
+114  	 RAISE_APPLICATION_ERROR(-20233,'Return below prepaid amount accepted');
+115    EXCEPTION WHEN OTHERS THEN expect_failure(-20118,'return below prepaid',SQLCODE,SQLERRM); END;
+116    SELECT Availability_Status INTO v_status FROM VEHICLE WHERE Vehicle_ID=3005;
+117    IF v_status<>'Rented' THEN RAISE_APPLICATION_ERROR(-20234,'Failed return changed vehicle status'); END IF;
+118  
+119    BEGIN
+120  	 UPDATE PAYMENT SET Amount=Amount+1 WHERE Payment_ID=6001;
+121  	 RAISE_APPLICATION_ERROR(-20222,'Direct payment update accepted');
+122    EXCEPTION WHEN OTHERS THEN expect_failure(-20140,'direct payment UPDATE',SQLCODE,SQLERRM); END;
+123    BEGIN
+124  	 DELETE FROM PAYMENT WHERE Payment_ID=6001;
+125  	 RAISE_APPLICATION_ERROR(-20223,'Direct payment delete accepted');
+126    EXCEPTION WHEN OTHERS THEN expect_failure(-20140,'direct payment DELETE',SQLCODE,SQLERRM); END;
+127    BEGIN
+128  	 DELETE FROM RENTAL WHERE Rental_ID=5003;
+129  	 RAISE_APPLICATION_ERROR(-20224,'Direct rental delete accepted');
+130    EXCEPTION WHEN OTHERS THEN expect_failure(-20136,'direct rental DELETE',SQLCODE,SQLERRM); END;
+131  
+132    SVR_WORKFLOW.OVERDUE_REPORT(CAST(SYSTIMESTAMP AS TIMESTAMP),v_count,v_sum);
+133    DBMS_OUTPUT.PUT_LINE('PASS overdue explicit cursor rows='||v_count||' estimated outstanding='||v_sum);
+134  END;
+135  /
+PASS charge boundaries: 0h=2000, 24h=2000, 24h+1s=4000                          
+PASS expected failure unavailable vehicle -20112                                
+PASS failed procedure preserved earlier caller UPDATE                           
+PASS expected failure invalid rental dates -20111                               
+PASS expected failure employee branch -20114                                    
+PASS expected failure historical overlap -20115                                 
+PASS start rental 7006, Rented, rate snapshot 2000                              
+PASS expected failure duplicate active vehicle -20112                           
+PASS changing type rate retained rental snapshot 2000                           
+PASS partial payment 8007, balance 1500                                         
+PASS expected failure overpayment -20144                                        
+PASS return final 2000, vehicle Available, balance 1500                         
+PASS expected failure repeat return -20116                                      
+PASS expected failure direct vehicle status UPDATE -20163                       
+PASS expected failure maintenance preservation -20112                           
+PASS expected failure direct Active INSERT -20132                               
+PASS expected failure direct overpayment INSERT -20144                          
+PASS valid direct payment INSERT guarded; all test payments roll back           
+PASS expected failure unsupported payment status -20141                         
+PASS expected failure return below prepaid -20118                               
+PASS expected failure direct payment UPDATE -20140                              
+PASS expected failure direct payment DELETE -20140                              
+PASS expected failure direct rental DELETE -20136                               
+OVERDUE 5002 due 2026-10-22 10:00:00 estimated balance 1500                     
+PASS overdue explicit cursor rows=1 estimated outstanding=1500                  
+
+PL/SQL procedure successfully completed.
+
+SQL> ROLLBACK TO step3_test;
+
+Rollback complete.
+
+SQL> DECLARE
+  2    n NUMBER; v_status VARCHAR2(16); v_rate NUMBER; v_address VARCHAR2(240);
+  3  BEGIN
+  4    SELECT COUNT(*) INTO n FROM RENTAL; IF n<>10 THEN RAISE_APPLICATION_ERROR(-20230,'RENTAL rollback count wrong'); END IF;
+  5    SELECT COUNT(*) INTO n FROM PAYMENT; IF n<>10 THEN RAISE_APPLICATION_ERROR(-20231,'PAYMENT rollback count wrong'); END IF;
+  6    SELECT Availability_Status INTO v_status FROM VEHICLE WHERE Vehicle_ID=3003;
+  7    SELECT Daily_Rate INTO v_rate FROM VEHICLE_TYPE WHERE Type_ID=3;
+  8    SELECT Address INTO v_address FROM CUSTOMER WHERE Customer_ID=1003;
+  9    IF v_status<>'Available' OR v_rate<>2000 OR v_address='STEP3 PRIOR WORK' THEN
+ 10  	 RAISE_APPLICATION_ERROR(-20232,'Rollback did not restore seed'); END IF;
+ 11    DBMS_OUTPUT.PUT_LINE('PASS rollback restored seed: RENTAL=10 PAYMENT=10 vehicle Available rate=2000');
+ 12  END;
+ 13  /
+PASS rollback restored seed: RENTAL=10 PAYMENT=10 vehicle Available rate=2000   
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT TABLE_NAME,NUM_ROWS FROM USER_TABLES WHERE TABLE_NAME IN
+  2   ('CUSTOMER','CUSTOMER_PHONE','VEHICLE_TYPE','BRANCH','VEHICLE','EMPLOYEE','RENTAL','PAYMENT') ORDER BY TABLE_NAME;
+
+TABLE_NAME                                                                      
+--------------------------------------------------------------------------------
+  NUM_ROWS                                                                      
+----------                                                                      
+BRANCH                                                                          
+        10                                                                      
+                                                                                
+CUSTOMER                                                                        
+        10                                                                      
+                                                                                
+CUSTOMER_PHONE                                                                  
+        11                                                                      
+                                                                                
+
+TABLE_NAME                                                                      
+--------------------------------------------------------------------------------
+  NUM_ROWS                                                                      
+----------                                                                      
+EMPLOYEE                                                                        
+        10                                                                      
+                                                                                
+PAYMENT                                                                         
+        10                                                                      
+                                                                                
+RENTAL                                                                          
+        10                                                                      
+                                                                                
+
+TABLE_NAME                                                                      
+--------------------------------------------------------------------------------
+  NUM_ROWS                                                                      
+----------                                                                      
+VEHICLE                                                                         
+        10                                                                      
+                                                                                
+VEHICLE_TYPE                                                                    
+        10                                                                      
+                                                                                
+
+8 rows selected.
+
+SQL> SPOOL OFF

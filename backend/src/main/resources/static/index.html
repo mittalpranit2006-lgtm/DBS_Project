@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c2838">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c2838'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-size='29' font-family='Arial' font-weight='bold' fill='%235ed1b3'%3ESV%3C/text%3E%3C/svg%3E">
+  <title>Smart Vehicle Rental · Operations</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">SV</span><div><strong>Smart Vehicle Rental</strong><small>Operations workspace</small></div></div>
+      <nav id="primary-nav" class="primary-nav" aria-label="Sections">
+        <button type="button" data-screen="dashboard" aria-current="page">Dashboard</button>
+        <button type="button" data-screen="customers">Customers & phones</button>
+        <button type="button" data-screen="fleet">Fleet & organization</button>
+        <button type="button" data-screen="rentals">Rentals & returns</button>
+        <button type="button" data-screen="payments">Payments & reports</button>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot" aria-hidden="true"></span><span id="connection-label">Checking database…</span></div>
+    </aside>
+    <div class="main-column">
+      <header class="topbar"><div><p class="eyebrow">Vehicle rental management</p><h1 id="page-title">Dashboard</h1></div><div class="topbar-actions"><span id="db-pill" class="pill" aria-live="polite">Checking database</span><button id="refresh-page" class="button button-quiet" type="button">Refresh view</button></div></header>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+      <main id="main" tabindex="-1"><div class="loading-card">Loading the workspace…</div></main>
+      <footer class="page-foot">Fictional project data · Amounts in INR · Local date and time</footer>
+    </div>
+  </div>
+  <dialog id="record-dialog" aria-labelledby="dialog-title">
+    <form id="record-form" novalidate>
+      <div class="dialog-head"><div><p class="eyebrow">Record editor</p><h2 id="dialog-title">Record</h2></div><button type="button" id="dialog-close" class="icon-button" aria-label="Close dialog">×</button></div>
+      <div id="dialog-fields" class="form-grid"></div>
+      <p id="dialog-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button type="button" id="dialog-cancel" class="button button-quiet">Cancel</button><button type="submit" id="dialog-submit" class="button button-primary">Save</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="confirm-body">
+      <h2 id="confirm-title">Confirm deletion</h2>
+      <p id="confirm-message"></p>
+      <div class="dialog-actions"><button id="confirm-cancel" class="button button-quiet" type="button">Cancel</button><button id="confirm-accept" class="button button-danger" type="button">Delete record</button></div>
+    </div>
+  </dialog>
+</body>
+</html>
